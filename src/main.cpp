@@ -208,6 +208,8 @@ void ez_screen_task() {
     pros::delay(ez::util::DELAY_TIME);
   }
 }
+
+//runs the printing in the background
 pros::Task ezScreenTask(ez_screen_task);
 
 /**
@@ -265,8 +267,10 @@ void opcontrol() {
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
 
+  
   while (true) {
     // Gives you some extras to make EZ-Template ezier
+    //allows for pid and for the auton runner while not plugged into the field
     ez_template_extras();
 
     

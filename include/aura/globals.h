@@ -29,7 +29,7 @@
 // Motor ports
 // left
 #define LEFT_MOTOR_1 -11
-#define LEFT_MOTOR_2 -12
+#define LEFT_MOTOR_2 -3
 #define LEFT_MOTOR_3 13
 #define LEFT_MOTOR_4 -14
 
