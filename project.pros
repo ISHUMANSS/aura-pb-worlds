@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "aura pb",
+    "project_name": "aura pb ez",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -425,7 +425,8 @@
     },
     "upload_options": {
       "description": "aura push back with ez template",
-      "icon": "alien"
+      "icon": "alien",
+      "slot": 2
     },
     "use_early_access": false
   }

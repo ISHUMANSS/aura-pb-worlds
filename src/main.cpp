@@ -23,7 +23,7 @@ subsystems::matchload matchload = subsystems::matchload(MATCHLOAD);
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
     {LEFT_MOTOR_1, LEFT_MOTOR_2, LEFT_MOTOR_3,LEFT_MOTOR_4},     // Left Chassis Ports (negative port will reverse it!)
-    {-RIGHT_MOTOR_1, -RIGHT_MOTOR_2, -RIGHT_MOTOR_3,RIGHT_MOTOR_4},  // Right Chassis Ports (negative port will reverse it!)
+    {RIGHT_MOTOR_1, RIGHT_MOTOR_2, RIGHT_MOTOR_3,RIGHT_MOTOR_4},  // Right Chassis Ports (negative port will reverse it!)
 
     IMU1,      // IMU Port
     DRIVE_WHEEL_DIAMETER,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
@@ -268,6 +268,8 @@ void opcontrol() {
   while (true) {
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
+
+    
 
     chassis.opcontrol_tank();  // Tank control
     // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
