@@ -341,8 +341,8 @@ namespace subsystems {
         {
             //hold L1 to extend
             //release to retract
-            // bool buttonHeld = Controller.get_digital(DIGITAL_L1);
-            // setState(buttonHeld);
+            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+            setState(buttonHeld);
         }
 
 
