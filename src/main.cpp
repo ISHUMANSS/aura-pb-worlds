@@ -272,7 +272,7 @@ void ez_template_extras() {
     //  * use A and Y to increment / decrement the constants
     //  * use the arrow keys to navigate the constants
     if (master.get_digital_new_press(DIGITAL_X)&& master.get_digital(DIGITAL_UP))
-      chassis.pid_tuner_toggle();
+      chassis.pid_tuner_toggle(); //works when not connected to comp switch
 
     // Trigger the selected autonomous routine
     if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) {
