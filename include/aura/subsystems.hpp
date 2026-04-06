@@ -82,7 +82,7 @@ namespace subsystems {
         pros::adi::Pneumatics lever_angle;
 
 
-        ez::PID lever_pid;// EZ Template PID controller
+        ez::PID lever_pid;//EZ Template PID controller
         LeverMode currentMode = LEVER_IDLE;
 
 

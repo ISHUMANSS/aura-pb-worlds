@@ -54,13 +54,14 @@
 // Intake
 #define LEVER_1 19
 #define LEVER_2 10
+
+
+// Lever
 #define INTAKE_1 -1 // left
 #define INTAKE_2 9  // right
 
+
 // Prenumatics ports
-
-
-
 // Matchload
 #define MATCHLOAD 'A' 
 
