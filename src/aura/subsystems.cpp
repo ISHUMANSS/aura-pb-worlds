@@ -166,7 +166,78 @@ namespace subsystems {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
+    lever::lever(int lever_1_port,
+             int lever_2_port,
+             char lever_angle_port)
+        : lever_1(pros::Motor(lever_1_port,
+                            pros::v5::MotorGearset::red,
+                            pros::v5::MotorEncoderUnits::degrees)),
+        lever_2(pros::Motor(lever_2_port,
+                            pros::v5::MotorGearset::red,
+                            pros::v5::MotorEncoderUnits::degrees)),
+        lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
+        // kP, kI, kD, start_i
+        lever_pid(0.45, 0.0, 1.2, 0.0, "Lever PID")
+    {}
 
+            void lever::setLeverState(double voltage, bool angle_state){
+                lever_1.move_velocity(floor(voltage));
+                lever_2.move_velocity(floor(voltage));
+                lever_angle.set_value(angle_state);
+            }
+
+            void lever::goUpFast()   { currentMode = UP_FAST;   lever_pid.target_set(POS_UP);   lever_angle.set_value(true); }
+            void lever::goUpSlow()   { currentMode = UP_SLOW;   lever_pid.target_set(POS_UP);   lever_angle.set_value(true); }
+            void lever::goDownFast() { currentMode = DOWN_FAST; lever_pid.target_set(POS_DOWN); lever_angle.set_value(false); }
+            void lever::goDownSlow() { currentMode = DOWN_SLOW; lever_pid.target_set(POS_DOWN); lever_angle.set_value(false); }
+            
+            
+            void lever::stop() {
+                currentMode = LEVER_IDLE;
+                lever_1.move_voltage(0);
+                lever_2.move_voltage(0);
+            }
+
+            bool lever::isSettled() {
+                return lever_pid.exit_condition({lever_1, lever_2});
+            }
+
+
+            void lever::update() {
+                if (currentMode == LEVER_IDLE) return;
+
+                //PID computes output from current motor position
+                //also change here if gonna use rotaion sensor or if 2 motor isn't working
+                //double output = lever_pid.compute(lever_1.get_position());
+
+                //average both of the motors to get the current position
+                double output = lever_pid.compute((lever_1.get_position() + lever_2.get_position()) / 2.0);
+
+
+                //select the max speed
+                double cap = (currentMode == UP_FAST || currentMode == DOWN_FAST)
+                            ? VOLT_FAST
+                            : VOLT_SLOW;
+
+                output = std::clamp(output, -cap, cap);
+
+                lever_1.move_voltage(static_cast<int>(output));
+                lever_2.move_voltage(static_cast<int>(output));
+
+                //idle once settled
+                if (isSettled()) stop();
+            }
+
+            void lever::driverFunctions() {
+                if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+                    goUpFast();
+                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+                    goUpSlow();
+                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+                    goDownFast();
+                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+                    goDownSlow();
+            }
 
 
         

@@ -1,4 +1,5 @@
 #include "main.h"
+#include "aura/globals.h"
 #include "aura/subsystems.hpp"
 
 
@@ -9,16 +10,23 @@
 // https://ez-robotics.github.io/EZ-Template/
 /////
 
+//set up lever
+subsystems::lever lever = subsystems::lever(LEVER_1,LEVER_2, LEVER_ANGLE_SHIFTER);
 
-subsystems::intake intake = subsystems::intake(INTAKE_TOP_1,
-                                               INTAKE_REDIR,
-                                               INTAKE_BOTTOM_1,
-                                               INTAKE_BOTTOM_2,
-                                               HOOD,
-                                               INAKE);
+//set up intake
+subsystems::intake intake = subsystems::intake(
+                                               INTAKE_1,
+                                               INTAKE_2
+                                              );
 
-// set up match load
+//set up match load
 subsystems::matchload matchload = subsystems::matchload(MATCHLOAD);
+
+
+//set up lever
+subsystems::descore descore = subsystems::descore(DESCORE);
+
+
 
 
 // Chassis constructor

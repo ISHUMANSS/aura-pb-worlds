@@ -3,6 +3,8 @@
 #include "pros/adi.hpp"
 #include "pros/motors.hpp"
 
+//allows the use of EZ pid
+#include "EZ-Template/api.hpp"
 
 
 /**
@@ -66,21 +68,55 @@ namespace subsystems {
 
     };
 
+    enum LeverMode {
+        LEVER_IDLE,
+        UP_FAST,
+        UP_SLOW,
+        DOWN_FAST,
+        DOWN_SLOW
+    };
+
     class lever{
         pros::Motor lever_1;
         pros::Motor lever_2;
+        pros::adi::Pneumatics lever_angle;
+
+
+        ez::PID lever_pid;// EZ Template PID controller
+        LeverMode currentMode = LEVER_IDLE;
+
+
+        //postions (in degrees)
+        static constexpr double POS_UP   = 100.0;
+        static constexpr double POS_DOWN =   0.0;
+
+        //voltage
+        static constexpr double VOLT_FAST = 12000.0;
+        static constexpr double VOLT_SLOW =  4000.0;
 
         public:
         lever(int lever_1_port, 
-                int lever_2_port);
+                int lever_2_port,
+            char lever_angle_port);
 
-        void setIntakeState(double voltage);
+        void setLeverState(double voltage, bool angle_state);
 
-        void scoreHightFast();
-        void scoreHighSlow();
 
-        void scoreMidFast();
-        void scoreMidSlow();
+        //keeps the lever in the correct positons and put the lever to idle when done
+        void update();
+
+        void driverFunctions();
+
+        //mode setters 
+        //also usable from auton
+        void goUpFast();
+        void goUpSlow();
+        void goDownFast();
+        void goDownSlow();
+        void stop();
+
+
+        bool isSettled();
 
 
 

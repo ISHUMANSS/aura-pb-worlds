@@ -52,10 +52,10 @@
 
 // set up so that they are all going up by default
 // Intake
-#define INTAKE_TOP_1 19
-#define INTAKE_REDIR 10
-#define INTAKE_BOTTOM_1 -1 // left
-#define INTAKE_BOTTOM_2 9  // right
+#define LEVER_1 19
+#define LEVER_2 10
+#define INTAKE_1 -1 // left
+#define INTAKE_2 9  // right
 
 // Prenumatics ports
 
@@ -65,9 +65,12 @@
 #define MATCHLOAD 'A' 
 
 // Intake
-#define INAKE 'C' 
+#define DESCORE 'C' 
 
-// Hood / GATE
+// Hood 
 #define HOOD 'B' 
+
+//Lever angle shifter
+#define LEVER_ANGLE_SHIFTER 'H'
 
 
