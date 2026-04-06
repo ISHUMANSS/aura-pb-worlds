@@ -3,6 +3,8 @@
 #include "pros/misc.h"
 #include "pros/motors.hpp"
 
+#include "EZ-Template/api.hpp"
+
 
 
 
