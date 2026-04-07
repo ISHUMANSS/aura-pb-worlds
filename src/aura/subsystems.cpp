@@ -154,7 +154,7 @@ namespace subsystems {
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
         hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
-        lever_pid(45.0, 0.0, 120.0, 0.0, "Lever PID")
+        lever_pid(10.0, 0.0, 50.0, 0.0, "Lever PID")
     {    
     }
 
@@ -171,6 +171,7 @@ namespace subsystems {
             //the speed that the lever moves at depends on if the lever is up or down 
             //for example if the lever is down the fast speed is slower then when the lever is up and the fast button is clicked
             void lever::driverFunctions() {
+                
                 /////
                 //angle togel
                 if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
@@ -190,6 +191,9 @@ namespace subsystems {
                     currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
                 }
 
+                // if (currentMode != LEVER_IDLE) {
+                //     lever_pid.reset();
+                // }
 
                 //make lever have correct speed
                 double leverVoltage = 0;
@@ -210,7 +214,12 @@ namespace subsystems {
 
                     case LEVER_IDLE:
                     default:
-                        leverVoltage = 0;
+                        // double position = lever_1.get_position();
+
+                        // double output = lever_pid.compute(0, position);
+
+                        // leverVoltage = output;
+                        leverVoltage = -5000;
                         break;
                 }
 
