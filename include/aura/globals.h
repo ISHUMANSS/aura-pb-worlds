@@ -52,8 +52,8 @@
 
 // set up so that they are all going up by default
 // Intake
-#define LEVER_1 -13
-#define LEVER_2 10
+#define LEVER_1 -10
+#define LEVER_2 17
 
 
 // Lever
@@ -73,5 +73,6 @@
 
 //Lever angle shifter
 #define LEVER_ANGLE_SHIFTER 'H'
+
 
 

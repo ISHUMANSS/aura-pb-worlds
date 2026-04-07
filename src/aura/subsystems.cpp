@@ -31,27 +31,17 @@ namespace subsystems {
             :   intake_1(pros::Motor(intake_1_port, pros::v5::MotorGearset::blue, pros::v5::MotorEncoderUnits::degrees)),
                 intake_2(pros::Motor(intake_2_port, pros::v5::MotorGearset::blue, pros::v5::MotorEncoderUnits::degrees))
             {
-
-
             }
-        //rest of the intakes functions
 
         void intake::setIntakeState(double voltage){
             //set the intakes motors to go the ways they need to
             intake_1.move_voltage(floor(voltage));
             intake_2.move_voltage(floor(voltage));
-
         }
 
         
 
         // intake driver functions:
-        //allow for hood to open and close along with diffrent scoreing modes
-        //allows for easier switching between modes of what needs to spin and what doesn't
-        //intake is able to keep spinning on a toggle (also closes hood)
-        //intake score up button opens the hood and spins so it scores up
-        //intake mid reverses the mid roller while the rest still go up
-        //intake bottom button outakes out the bottom and then also stops the toggle
 
         /**
             * All driver control functions for intake:
@@ -61,21 +51,16 @@ namespace subsystems {
             * Score low
             *
             * Controls:
-            * A  -> Toggle indexing
-            * UP  -> Speed override
-            * IDK -> Score Low
         
         */
         void intake::driverFunctions() {
-            //toggles
+            //TOGGLES
             //start indexing
             if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
                 indexingEnabled = !indexingEnabled;
             }
 
-            
-
-            //make speed for mid goals changed when down is being held
+            //speed overide to help the intake go faster and slower for scoreing low goals
             bool speedOverride = master.get_digital(pros::E_CONTROLLER_DIGITAL_UP);
 
 
@@ -91,7 +76,6 @@ namespace subsystems {
                 currentMode = INTAKE_INDEX;
             else
                 currentMode = IDLE;
-        
 
             double voltage = 0;
 
@@ -105,31 +89,21 @@ namespace subsystems {
                 case INTAKE_INDEX:{
                     voltage = 8000;
 
-                    
-
                     break;
                 }
-
                 case OUTTAKE_LOW:{
-                    
                     bool lowIsFast = lowFast || speedOverride;
                     voltage = lowIsFast ?  -2500 : -6000;
 
                     indexingEnabled = false; 
                     break;
                 }
-
-               
-                
-
                 case IDLE:
                 default:
                     //everything off
                     voltage = 0;
                     break;
             }
-
-
             setIntakeState(voltage);
         }
 
@@ -167,8 +141,10 @@ namespace subsystems {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
     lever::lever(int lever_1_port,
-             int lever_2_port,
-             char lever_angle_port)
+                 int lever_2_port,
+                char lever_angle_port,
+                char hood_port
+            )
         : lever_1(pros::Motor(lever_1_port,
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
@@ -176,75 +152,74 @@ namespace subsystems {
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
+        hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
         lever_pid(45.0, 0.0, 120.0, 0.0, "Lever PID")
-    {
-        
-        // Define what it means to be "settled" for this PID
-        // (small_error, small_error_time, large_error, large_error_time, max_time)
-        lever_pid.exit_condition_set(5, 50, 15, 150, 2000); 
-    
+    {    
     }
 
             void lever::setLeverState(double voltage, bool angle_state){
-                lever_1.move_velocity(floor(voltage));
-                lever_2.move_velocity(floor(voltage));
+                lever_1.move_voltage(floor(voltage));
+                lever_2.move_voltage(floor(voltage));
                 lever_angle.set_value(angle_state);
             }
 
-            void lever::goUpFast()   { currentMode = UP_FAST;   lever_pid.target_set(POS_UP);   lever_angle.set_value(true); }
-            void lever::goUpSlow()   { currentMode = UP_SLOW;   lever_pid.target_set(POS_UP);   lever_angle.set_value(true); }
-            void lever::goDownFast() { currentMode = DOWN_FAST; lever_pid.target_set(POS_DOWN); lever_angle.set_value(false); }
-            void lever::goDownSlow() { currentMode = DOWN_SLOW; lever_pid.target_set(POS_DOWN); lever_angle.set_value(false); }
             
-            
-            void lever::stop() {
-                currentMode = LEVER_IDLE;
-                lever_1.move_voltage(0);
-                lever_2.move_voltage(0);
-            }
 
-            bool lever::isSettled() {
-                return lever_pid.exit_condition({lever_1, lever_2});
-            }
-
-
-            void lever::update() {
-                if (currentMode == LEVER_IDLE) return;
-
-                //PID computes output from current motor position
-                //also change here if gonna use rotaion sensor or if 2 motor isn't working
-                double output = lever_pid.compute(lever_1.get_position());
-
-                //average both of the motors to get the current position
-                // double output = lever_pid.compute((lever_1.get_position() + lever_2.get_position()) / 2.0);
-
-
-                //select the max speed
-                double cap = (currentMode == UP_FAST || currentMode == DOWN_FAST)
-                            ? VOLT_FAST
-                            : VOLT_SLOW;
-
-                output = std::clamp(output, -cap, cap);
-
-                lever_1.move_voltage(static_cast<int>(output));
-                lever_2.move_voltage(static_cast<int>(output));
-
-                //idle once settled
-                if (isSettled()) stop();
-            }
-
+            //one button to toggle if the lever is able to go up or down and switches between the 2
+            //2 buttons controlling speed
+            //the speed that the lever moves at depends on if the lever is up or down 
+            //for example if the lever is down the fast speed is slower then when the lever is up and the fast button is clicked
             void lever::driverFunctions() {
-                if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
-                    goUpFast();
-                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-                    goUpSlow();
-                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
-                    goDownFast();
-                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
-                    goDownSlow();
+                /////
+                //angle togel
+                if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+                    angle_press_count++;
+                    leverAngle = (angle_press_count % 2 != 0) ? LEVER_UP : LEVER_DOWN;         
+                }
+
+                bool angle_state = (leverAngle == LEVER_UP);
+
+                //////
+                //speed toggles
+
+                if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+                    currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
+                }
+                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+                    currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
+                }
+
+
+                //make lever have correct speed
+                double leverVoltage = 0;
+
+                switch (currentMode) {
+
+                    case LEVER_FAST: {
+                        //speed depends on angle
+                        leverVoltage = (leverAngle == LEVER_UP) ? 12000 : 8000;
+                        break;
+                    }
+
+                    case LEVER_SLOW: {
+                        //speed depends on angle
+                        leverVoltage = (leverAngle == LEVER_UP) ? 6000 : 4000;
+                        break;
+                    }
+
+                    case LEVER_IDLE:
+                    default:
+                        leverVoltage = 0;
+                        break;
+                }
+
+
+
+                setLeverState(leverVoltage, angle_state);
             }
 
+            //reset the lever postion to 0
             void lever::leverTare(){
                 lever_1.tare_position();
                 lever_2.tare_position();

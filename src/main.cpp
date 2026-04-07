@@ -11,7 +11,9 @@
 /////
 
 //set up lever
-subsystems::lever lever = subsystems::lever(LEVER_1,LEVER_2, LEVER_ANGLE_SHIFTER);
+subsystems::lever lever = subsystems::lever(LEVER_1,LEVER_2, LEVER_ANGLE_SHIFTER, HOOD);
+
+
 
 //set up intake
 subsystems::intake intake = subsystems::intake(
@@ -346,9 +348,6 @@ void opcontrol() {
     matchload.driverFunctions();
 
     lever.driverFunctions();
-
-    //gets the lever moving to the correct position
-    lever.update();
 
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
