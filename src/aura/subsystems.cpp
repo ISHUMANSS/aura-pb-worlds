@@ -38,8 +38,8 @@ namespace subsystems {
 
         void intake::setIntakeState(double voltage){
             //set the intakes motors to go the ways they need to
-            intake_1.move_velocity(floor(voltage));
-            intake_2.move_velocity(floor(voltage));
+            intake_1.move_voltage(floor(voltage));
+            intake_2.move_voltage(floor(voltage));
 
         }
 
@@ -84,7 +84,7 @@ namespace subsystems {
             //----------------------------------------------------
             
             
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
                 currentMode = OUTTAKE_LOW;
             }
             else if (indexingEnabled)
@@ -102,7 +102,7 @@ namespace subsystems {
             switch(currentMode)
             {
                 
-                case INTAKE_INDEX:{   // Toggle B
+                case INTAKE_INDEX:{
                     voltage = 8000;
 
                     
@@ -110,10 +110,10 @@ namespace subsystems {
                     break;
                 }
 
-                case OUTTAKE_LOW:{   // L2
+                case OUTTAKE_LOW:{
                     
                     bool lowIsFast = lowFast || speedOverride;
-                    voltage = lowIsFast ?  -250 : -600;
+                    voltage = lowIsFast ?  -2500 : -6000;
 
                     indexingEnabled = false; 
                     break;
@@ -177,8 +177,14 @@ namespace subsystems {
                             pros::v5::MotorEncoderUnits::degrees)),
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
         // kP, kI, kD, start_i
-        lever_pid(0.45, 0.0, 1.2, 0.0, "Lever PID")
-    {}
+        lever_pid(45.0, 0.0, 120.0, 0.0, "Lever PID")
+    {
+        
+        // Define what it means to be "settled" for this PID
+        // (small_error, small_error_time, large_error, large_error_time, max_time)
+        lever_pid.exit_condition_set(5, 50, 15, 150, 2000); 
+    
+    }
 
             void lever::setLeverState(double voltage, bool angle_state){
                 lever_1.move_velocity(floor(voltage));
@@ -208,10 +214,10 @@ namespace subsystems {
 
                 //PID computes output from current motor position
                 //also change here if gonna use rotaion sensor or if 2 motor isn't working
-                //double output = lever_pid.compute(lever_1.get_position());
+                double output = lever_pid.compute(lever_1.get_position());
 
                 //average both of the motors to get the current position
-                double output = lever_pid.compute((lever_1.get_position() + lever_2.get_position()) / 2.0);
+                // double output = lever_pid.compute((lever_1.get_position() + lever_2.get_position()) / 2.0);
 
 
                 //select the max speed
@@ -237,6 +243,11 @@ namespace subsystems {
                     goDownFast();
                 else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
                     goDownSlow();
+            }
+
+            void lever::leverTare(){
+                lever_1.tare_position();
+                lever_2.tare_position();
             }
 
 

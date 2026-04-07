@@ -51,6 +51,7 @@
 //add the rest of my includes here
 #include "aura/globals.h"
 #include "aura/subsystems.hpp"
+#include "aura/lvgl_selector.hpp"
 
 
 

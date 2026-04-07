@@ -139,6 +139,9 @@ void initialize() {
         }
       },
 
+
+      
+
 });
 
 
@@ -146,6 +149,9 @@ void initialize() {
   chassis.initialize();
   // ez::as::initialize();
   lvgl_selector_init();
+
+  //reset the lever positions
+  lever.leverTare();
   
   
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
@@ -338,6 +344,12 @@ void opcontrol() {
     intake.driverFunctions();
     // matchloader
     matchload.driverFunctions();
+
+    lever.driverFunctions();
+
+    //gets the lever moving to the correct position
+    lever.update();
+
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
