@@ -109,11 +109,12 @@ void initialize() {
   // });
 
   LVGLTheme my_theme = {
-    lv_color_hex(0x1a0000),   // background
+    lv_color_hex(0x1d3d1e),   // background
     lv_color_hex(0x330000),   // panel
-    lv_color_hex(0x660000),   // button
-    lv_color_hex(0xff3333),   // button_selected
-    lv_color_hex(0xff6666),   // accent
+    lv_color_hex(0x105913),   // button
+    lv_color_hex(0x178a1c),   // button_selected
+    lv_color_hex(0x38663a),   // accent and path points
+    lv_color_hex(0x238727),   //reversed path colour
     lv_color_hex(0xffffff),   // text
     lv_color_hex(0xaaaaaa),   // text_muted
   };
@@ -127,10 +128,10 @@ void initialize() {
         "pick up blocks, match load, score",
         rightSideAuton,
         {   // waypoints: x/y in inches from field centre
-            {  48, -48, false, "start" },
-            {  24, -48, false, nullptr },
-            {   0, -24, true,  "gaol"  },
-            { -24,   0, false, "match loader" },
+            {  48, -48, false},
+            {  24, -48, false},
+            {   0, -24, true},
+            { -24,   0, false},
         }
       },
       {"drive forwards and back pid",

@@ -1,59 +1,71 @@
-#include "aura/lvgl_selector.hpp"
+#include "aura/lvgl_selector.hpp" // Change to your actual path
+
+
+LV_IMG_DECLARE(vexfield);
 
 static std::vector<LVGLAuton> autons;
 static int selected_auton = 0;
 
+//field size control
+static const int FIELD_SIZE = 120;
+static const int FIELD_HALF = FIELD_SIZE / 2;
+static const int TILE_SIZE  = FIELD_SIZE / 6;
+
 static LVGLTheme theme = {
-    lv_color_hex(0x111111),
-    lv_color_hex(0x1a1a1a),
-    lv_color_hex(0x2a2a2a),
-    lv_color_hex(0xcc2222),
-    lv_color_hex(0xff4444),
-    lv_color_hex(0xffffff),
-    lv_color_hex(0x888888),
+    lv_color_hex(0x111111),  // background
+    lv_color_hex(0x1a1a1a),  // panel
+    lv_color_hex(0x2a2a2a),  // button
+    lv_color_hex(0xcc2222),  // button_selected
+    lv_color_hex(0xff4444),  // accent (forward path)
+    lv_color_hex(0xff8888),  // reverse_path
+    lv_color_hex(0xffffff),  // text
+    lv_color_hex(0x888888),  // text_muted
 };
 
 static lv_obj_t* btn_list     = nullptr;
 static lv_obj_t* desc_label   = nullptr;
 static lv_obj_t* field_canvas = nullptr;
 
-// FIX 3: LV_COLOR_DEPTH 32 = 4 bytes per pixel
-static uint8_t canvas_buf[144 * 144 * 4];
+static uint8_t canvas_buf[120 * 120 * 4];
 
 static lv_coord_t field_px(float inch) {
-    return (lv_coord_t)(inch + 72.0f);
+    return (lv_coord_t)(inch + 60.0f);
 }
 
 static void draw_field(int auton_idx) {
     if (field_canvas == nullptr) return;
 
-    uint32_t child_cnt = lv_obj_get_child_cnt(field_canvas);
-    for (uint32_t i = child_cnt; i > 0; i--) {
-        lv_obj_del(lv_obj_get_child(field_canvas, i - 1));
-    }
+    
+    // 1. Clear/Fill background
+    lv_canvas_fill_bg(field_canvas, lv_color_hex(0x000000), LV_OPA_COVER);
 
-    lv_canvas_fill_bg(field_canvas, lv_color_hex(0x1a2a1a), LV_OPA_COVER);
+    // 2. Draw the Field Image (The Background Layer)
+    lv_draw_img_dsc_t img_draw_dsc;
+    lv_draw_img_dsc_init(&img_draw_dsc);
+    img_draw_dsc.opa = LV_OPA_70; // Set to 255 for full brightness, or lower to see grid better
+    
+    // Draw the image at (0,0)
+    lv_canvas_draw_img(field_canvas, 0, 0, &vexfield, &img_draw_dsc);
 
-    // Grid tiles
+    // 3. Draw Grid (Optional - skip if image has a grid)
     lv_draw_rect_dsc_t tile_dsc;
     lv_draw_rect_dsc_init(&tile_dsc);
     tile_dsc.bg_opa       = LV_OPA_TRANSP;
-    tile_dsc.border_color = lv_color_hex(0x2a3a2a);
+    tile_dsc.border_color = lv_color_hex(0xffffff);
     tile_dsc.border_width = 1;
-    tile_dsc.border_opa   = LV_OPA_50;
-    tile_dsc.radius       = 0;
+    tile_dsc.border_opa   = LV_OPA_20; // Very faint grid over the image
     for (int col = 0; col < 6; col++)
         for (int row = 0; row < 6; row++)
-            lv_canvas_draw_rect(field_canvas, col * 24, row * 24, 24, 24, &tile_dsc);
+            lv_canvas_draw_rect(field_canvas, col * 20, row * 20, 20, 20, &tile_dsc);
 
-    // FIX 2: proper 2-point arrays for centre lines
+    //draw waypoints        
     lv_draw_line_dsc_t line_dsc;
     lv_draw_line_dsc_init(&line_dsc);
     line_dsc.color = lv_color_hex(0x3a4a3a);
     line_dsc.width = 1;
     line_dsc.opa   = LV_OPA_70;
-    lv_point_t hline[2] = {{0, 72},  {143, 72}};
-    lv_point_t vline[2] = {{72, 0},  {72, 143}};
+    lv_point_t hline[2] = {{0, 60},  {119, 60}};
+    lv_point_t vline[2] = {{60, 0},  {60, 119}};
     lv_canvas_draw_line(field_canvas, hline, 2, &line_dsc);
     lv_canvas_draw_line(field_canvas, vline, 2, &line_dsc);
 
@@ -91,7 +103,7 @@ static void draw_field(int auton_idx) {
         const auto& from = aut.waypoints[i - 1];
         const auto& to   = aut.waypoints[i];
 
-        path_dsc.color = to.reverse ? lv_color_hex(0xff8888) : theme.accent;
+        path_dsc.color = to.reverse ? theme.reverse_path : theme.accent;
         lv_point_t seg[2] = {
             {field_px(from.x), field_px(-from.y)},
             {field_px(to.x),   field_px(-to.y)}
@@ -101,16 +113,6 @@ static void draw_field(int auton_idx) {
         lv_coord_t dx = field_px(to.x) - 3;
         lv_coord_t dy = field_px(-to.y) - 3;
         lv_canvas_draw_rect(field_canvas, dx, dy, 6, 6, &dot_dsc);
-
-        // FIX 4: lv_canvas_draw_text doesn't exist in LVGL 8.3 — use a label widget
-        if (to.label != nullptr) {
-            lv_obj_t* lbl = lv_label_create(field_canvas);
-            lv_label_set_text(lbl, to.label);
-            lv_obj_set_style_text_font(lbl, &lv_font_montserrat_10, 0);
-            lv_obj_set_style_text_color(lbl, theme.text, 0);
-            lv_obj_set_style_bg_opa(lbl, LV_OPA_TRANSP, 0);
-            lv_obj_set_pos(lbl, dx + 5, dy - 10);
-        }
     }
 }
 
@@ -222,13 +224,12 @@ void lvgl_selector_init() {
     lv_obj_set_style_border_width(right, 0, 0);
     lv_obj_set_style_pad_all(right, 6, 0);
     lv_obj_set_flex_flow(right, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(right, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_row(right, 6, 0);
 
     field_canvas = lv_canvas_create(right);
-    // FIX 3: 4 bytes per pixel for 32-bit colour depth
-    lv_canvas_set_buffer(field_canvas, canvas_buf, 144, 144, LV_IMG_CF_TRUE_COLOR);
-    lv_obj_set_size(field_canvas, 144, 144);
-    lv_obj_align(field_canvas, LV_ALIGN_TOP_MID, 0, 0);
+    lv_canvas_set_buffer(field_canvas, canvas_buf, 120, 120, LV_IMG_CF_TRUE_COLOR);
+    lv_obj_set_size(field_canvas, 120, 120);
     draw_field(0);
 
     // Legend
@@ -253,8 +254,8 @@ void lvgl_selector_init() {
         lv_obj_set_style_text_font(lbl, &lv_font_montserrat_10, 0);
         lv_obj_set_style_text_color(lbl, theme.text_muted, 0);
     };
-    make_legend_item(theme.accent,           "forward");
-    make_legend_item(lv_color_hex(0xff8888), "reverse");
+    make_legend_item(theme.accent,       "forward");
+    make_legend_item(theme.reverse_path, "reverse");
 
     // Description
     desc_label = lv_label_create(right);
