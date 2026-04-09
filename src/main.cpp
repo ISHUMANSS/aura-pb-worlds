@@ -333,16 +333,10 @@ void opcontrol() {
     ez_template_extras();
 
     
-
-    chassis.opcontrol_tank();  // Tank control
-    // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
-    // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
-    // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
-    // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
-
-    // . . .
-    // Put more user control code here!
-    // . . .
+    chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
+    chassis.opcontrol_curve_buttons_toggle(false);  // Disable modifying curves through the controller
+    chassis.opcontrol_curve_default_set(3, 5); //scaling curve so it like is drivable :3
+  
 
     intake.driverFunctions();
     // matchloader

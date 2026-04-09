@@ -202,24 +202,37 @@ namespace subsystems {
 
                     case LEVER_FAST: {
                         //speed depends on angle
+                        //have the lever move to a specific position at a specific speed using pid for the diffrent height state
+
                         leverVoltage = (leverAngle == LEVER_UP) ? 12000 : 8000;
                         break;
                     }
 
                     case LEVER_SLOW: {
                         //speed depends on angle
+                        //have the lever move to a specific position at a specific speed using pid for the diffrent height state
+
                         leverVoltage = (leverAngle == LEVER_UP) ? 6000 : 4000;
                         break;
                     }
 
+                    case LEVER_MANUAL:{
+                      //this will allow for customized moving up for the robot 
+                      //at like a slow ish speed but will just allow for a hold
+                        break;
+                    }
+                    case LEVER_EMERGENCY:{
+                        //this will allow us to move the lever back manualy
+                        break;
+                    }
+
+
                     case LEVER_IDLE:
                     default:
-                        // double position = lever_1.get_position();
+                        //no pid for going forwards it needs to use the unjam and then tare its position so it can go to go
 
-                        // double output = lever_pid.compute(0, position);
-
-                        // leverVoltage = output;
-                        leverVoltage = -5000;
+                        
+                        //leverVoltage = -5000;
                         break;
                 }
 
@@ -229,6 +242,7 @@ namespace subsystems {
             }
 
             //reset the lever postion to 0
+            //happens at the start of a match before auton and happebns each time the motor knows it at the bottom
             void lever::leverTare(){
                 lever_1.tare_position();
                 lever_2.tare_position();
