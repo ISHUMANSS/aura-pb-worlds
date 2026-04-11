@@ -128,10 +128,11 @@ void initialize() {
         "pick up blocks, match load, score",
         rightSideAuton,
         {   // waypoints: x/y in inches from field centre
-            {  48, -48, false},
-            {  24, -48, false},
-            {   0, -24, true},
-            { -24,   0, false},
+           { 48, -48, false}, // Start in the bottom right tile
+            { 24, -48, false}, // Move one tile left
+            {20,-40, false},
+            { 0, -24,  true},  // Reverse toward the center
+            {-24,  0,  false},
         }
       },
       {"drive forwards and back pid",

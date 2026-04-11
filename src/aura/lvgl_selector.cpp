@@ -37,37 +37,58 @@ static void draw_field(int auton_idx) {
 
     lv_canvas_fill_bg(field_canvas, lv_color_hex(0x000000), LV_OPA_COVER);
 
-    // Field image
+    // 1. Draw Field image
     lv_draw_img_dsc_t img_draw_dsc;
     lv_draw_img_dsc_init(&img_draw_dsc);
     img_draw_dsc.opa = LV_OPA_70;
     lv_canvas_draw_img(field_canvas, 0, 0, &vexfield, &img_draw_dsc);
 
-    // Tile grid
+    // 2. Setup Grid Drawing
     lv_draw_rect_dsc_t tile_dsc;
     lv_draw_rect_dsc_init(&tile_dsc);
-    tile_dsc.bg_opa       = LV_OPA_TRANSP;
-    tile_dsc.border_color = lv_color_hex(0xffffff);
-    tile_dsc.border_width = 1;
-    tile_dsc.border_opa   = LV_OPA_20;
-    int tile_px = FIELD_SIZE / 6;
-    for (int col = 0; col < 6; col++)
-        for (int row = 0; row < 6; row++)
-            lv_canvas_draw_rect(field_canvas,
-                col * tile_px, row * tile_px, tile_px, tile_px, &tile_dsc);
+    tile_dsc.bg_opa = LV_OPA_TRANSP;
+    tile_dsc.radius = 0;
 
-    // Centre crosshair
-    lv_draw_line_dsc_t line_dsc;
-    lv_draw_line_dsc_init(&line_dsc);
-    line_dsc.color = lv_color_hex(0x3a4a3a);
-    line_dsc.width = 1;
-    line_dsc.opa   = LV_OPA_70;
+    // We want a 24x24 total grid (4 subdivisions per 6 tiles)
+    // 160px / 24 = ~6.66px per 6-inch square. 
+    // It's cleaner to calculate the pixel position directly for each line.
+    int total_subdivisions = 24; 
+
+    for (int i = 0; i <= total_subdivisions; i++) {
+        float percent = (float)i / total_subdivisions;
+        lv_coord_t pos = (lv_coord_t)(percent * (FIELD_SIZE - 1));
+
+        // Determine line style: 
+        // Every 4th line is a "Major" line (the actual 24" foam tile border)
+        bool is_major = (i % 4 == 0);
+
+        lv_draw_line_dsc_t grid_line_dsc;
+        lv_draw_line_dsc_init(&grid_line_dsc);
+        grid_line_dsc.width = 1;
+        grid_line_dsc.color = lv_color_hex(0xffffff);
+        grid_line_dsc.opa = is_major ? LV_OPA_40 : LV_OPA_10; // Major lines are brighter
+
+        // Horizontal line
+        lv_point_t h_pts[2] = {{0, pos}, {FIELD_SIZE - 1, pos}};
+        lv_canvas_draw_line(field_canvas, h_pts, 2, &grid_line_dsc);
+
+        // Vertical line
+        lv_point_t v_pts[2] = {{pos, 0}, {pos, FIELD_SIZE - 1}};
+        lv_canvas_draw_line(field_canvas, v_pts, 2, &grid_line_dsc);
+    }
+
+    // 3. Centre crosshair (highlighted in a different color)
+    lv_draw_line_dsc_t cross_dsc;
+    lv_draw_line_dsc_init(&cross_dsc);
+    cross_dsc.color = lv_color_hex(0x00ff00); // Slight green tint for center
+    cross_dsc.width = 1;
+    cross_dsc.opa = LV_OPA_50;
     lv_coord_t mid = FIELD_SIZE / 2;
-    lv_point_t hline[2] = {{0, mid},             {FIELD_SIZE - 1, mid}};
-    lv_point_t vline[2] = {{mid, 0},             {mid, FIELD_SIZE - 1}};
-    lv_canvas_draw_line(field_canvas, hline, 2, &line_dsc);
-    lv_canvas_draw_line(field_canvas, vline, 2, &line_dsc);
+    lv_point_t h_mid[2] = {{0, mid}, {FIELD_SIZE - 1, mid}};
+    lv_point_t v_mid[2] = {{mid, 0}, {mid, FIELD_SIZE - 1}};
+    lv_canvas_draw_line(field_canvas, h_mid, 2, &cross_dsc);
 
+    // 4. Draw Waypoints (Rest of the code remains the same)
     if (auton_idx < 0 || auton_idx >= (int)autons.size()) return;
     const auto& aut = autons[auton_idx];
     if (aut.waypoints.empty()) return;
