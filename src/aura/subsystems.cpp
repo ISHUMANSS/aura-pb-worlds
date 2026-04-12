@@ -154,7 +154,7 @@ namespace subsystems {
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
         hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
-        lever_pid(10.0, 0.0, 50.0, 0.0, "Lever PID")
+        lever_pid(5.0, 0.0, 20.0, 0.0, "Lever PID")
     {    
     }
 
@@ -173,92 +173,100 @@ namespace subsystems {
                 return current_1 > STRAIN_THRESHOLD;
             }
 
+
+            double lever::getLeverPosition() {
+                // Average both motors once lever_2 is active
+                // For now just use lever_1 since it's the active one
+                return lever_1.get_position();
+            }
+
+            void lever::setLeverTarget(double position, int max_speed) {
+                pid_max_speed  = max_speed;
+                lever_pid.target_set(position);
+                usingPIDTarget = true;
+            }
+
             //one button to toggle if the lever is able to go up or down and switches between the 2
             //2 buttons controlling speed
             //the speed that the lever moves at depends on if the lever is up or down 
             //for example if the lever is down the fast speed is slower then when the lever is up and the fast button is clicked
             void lever::driverFunctions() {
                 
-                /////
-                //angle togel
+                // angle toggle
                 if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
                     angle_press_count++;
                     leverAngle = (angle_press_count % 2 != 0) ? LEVER_UP : LEVER_DOWN;         
                 }
 
                 bool angle_state = (leverAngle == LEVER_UP);
+                lever_angle.set_value(angle_state); // set pneumatic independently
 
-                //////
-                //speed toggles
-
+                // speed toggles
                 if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
                     currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
                 }
                 else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
                     currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
                 }
-                //hold for slower and custom
-                else if(master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
+                else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
                     currentMode = LEVER_MANUAL;
                 }
-                else if(master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
+                else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
                     currentMode = LEVER_EMERGENCY;
                 }
-
-                //make lever have correct speed
-                double leverVoltage = 0;
 
                 switch (currentMode) {
 
                     case LEVER_FAST: {
-                        //speed depends on angle
-                        //have the lever move to a specific position at a specific speed using pid for the diffrent height state
                         homed = false;
-                        leverVoltage = (leverAngle == LEVER_UP) ? 12000 : 8000;
+                        double target = (leverAngle == LEVER_UP) ? TARGET_FAST_UP : TARGET_FAST_DOWN;
+                        setLeverTarget(target, SPEED_FAST);
+                        // leverTask() drives the motor — nothing more needed here
                         break;
                     }
 
                     case LEVER_SLOW: {
-                        //speed depends on angle
-                        //have the lever move to a specific position at a specific speed using pid for the diffrent height state
                         homed = false;
-                        leverVoltage = (leverAngle == LEVER_UP) ? 6000 : 4000;
+                        double target = (leverAngle == LEVER_UP) ? TARGET_SLOW_UP : TARGET_SLOW_DOWN;
+                        setLeverTarget(target, SPEED_SLOW);
                         break;
                     }
 
-                    case LEVER_MANUAL:{
-                        //this will allow for customized moving up for the robot 
-                        //at like a slow ish speed but will just allow for a hold
+                    case LEVER_MANUAL: {
                         homed = false;
-                        leverVoltage = 2000;
-                        break;
-                    }
-                    case LEVER_EMERGENCY:{
-                        //this will allow us to move the lever back manualy
+                        usingPIDTarget = false;
+                        lever_1.move_voltage(2000);
+                        // lever_2.move_voltage(2000);
                         break;
                     }
 
+                    case LEVER_EMERGENCY: {
+                        usingPIDTarget = false;
+                        lever_1.move_voltage(HOMING_VOLTAGE);
+                        // lever_2.move_voltage(HOMING_VOLTAGE);
+                        break;
+                    }
 
                     case LEVER_IDLE:
                     default: {
+                        usingPIDTarget = false;
+
                         if (homed) {
-                            // Already zeroed — just sit still
-                            leverVoltage = 0;
+                            lever_1.move_voltage(0);
+                            // lever_2.move_voltage(0);
                         } else {
-                            // Drive toward hard stop
+                            // drive toward hard stop
                             homing = true;
-                            leverVoltage = HOMING_VOLTAGE;
+                            lever_1.move_voltage(HOMING_VOLTAGE);
+                            // lever_2.move_voltage(HOMING_VOLTAGE);
 
                             if (isUnderStrain()) {
                                 strain_counter++;
                                 if (strain_counter >= STRAIN_CONFIRM_TICKS) {
-                                    // Confirmed hard stop — stop and tare
-                                    leverVoltage = 0;
                                     lever_1.move_voltage(0);
-                                    // lever_2.move_voltage(0); // uncomment for second motor
                                     leverTare();
                                     homing = false;
-                                    homed = true;
+                                    homed  = true;
                                     strain_counter = 0;
                                 }
                             } else {
@@ -268,10 +276,24 @@ namespace subsystems {
                         break;
                     }
                 }
+            }
+
+            void lever::leverTask() {
+                while (true) {
+
+                    pros::lcd::print(6, "Lever pos: %.1f", getLeverPosition());
+                    pros::lcd::print(7, "Lever mA:  %d",   lever_1.get_current_draw());
 
 
-
-                setLeverState(leverVoltage, angle_state);
+                    if (usingPIDTarget) {
+                        double output = lever_pid.compute(getLeverPosition());
+                        
+                        output = ez::util::clamp(output, pid_max_speed);
+                        lever_1.move(output);
+                        // lever_2.move(output); 
+                    }
+                    pros::delay(10);
+                }
             }
 
             //reset the lever postion to 0

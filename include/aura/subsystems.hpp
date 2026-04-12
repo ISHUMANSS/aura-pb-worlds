@@ -107,6 +107,21 @@ namespace subsystems {
         static constexpr int STRAIN_THRESHOLD = 1000;// mA (TUNE THIS DEPENDING HOW HOW MUCH STRAIN IT CAN BE ON)
         static constexpr int STRAIN_CONFIRM_TICKS = 15;// how many loop ticks above threshold before stopping
 
+        //PID control state
+        bool usingPIDTarget = false;// true when PID should be driving motors
+        int  pid_max_speed  = 100;
+
+        //position targets (NEED TUNEING)
+        //UP =lever is raised
+        //DOWN = lever is lowered 
+        static constexpr double TARGET_FAST_UP   = 20.0;
+        static constexpr double TARGET_FAST_DOWN = 20.0;
+        static constexpr double TARGET_SLOW_UP   = 23.0;
+        static constexpr double TARGET_SLOW_DOWN = 23.0;
+
+        static constexpr int SPEED_FAST = 90;//max PID output fast mode
+        static constexpr int SPEED_SLOW = 60;//max PID output slow mode
+
 
         
 
@@ -118,7 +133,15 @@ namespace subsystems {
 
         void setLeverState(double voltage, bool angle_state);
 
+        void setLeverTarget(double position, int max_speed); //set PID target
+        
+        double getLeverPosition();//read IME
+
         void driverFunctions();
+
+        void leverTask();//runs in a task loop
+    
+
 
         //reset the positions of the IMEs in the motors
         void leverTare();

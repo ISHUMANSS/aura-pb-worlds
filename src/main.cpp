@@ -154,8 +154,9 @@ void initialize() {
   // ez::as::initialize();
   lvgl_selector_init();
 
-  //reset the lever positions
+  //reset the lever positions and start the task allowing for PID
   lever.leverTare();
+  pros::Task lever_task([&]() { lever.leverTask(); });
   
   
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
