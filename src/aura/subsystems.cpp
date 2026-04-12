@@ -166,6 +166,13 @@ namespace subsystems {
 
             
 
+            bool lever::isUnderStrain() {
+                // get_current_draw() returns milliamps
+                int current_1 = lever_1.get_current_draw();
+                // int current_2 = lever_2.get_current_draw(); // add when second motor in use
+                return current_1 > STRAIN_THRESHOLD;
+            }
+
             //one button to toggle if the lever is able to go up or down and switches between the 2
             //2 buttons controlling speed
             //the speed that the lever moves at depends on if the lever is up or down 
@@ -190,10 +197,13 @@ namespace subsystems {
                 else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
                     currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
                 }
-
-                // if (currentMode != LEVER_IDLE) {
-                //     lever_pid.reset();
-                // }
+                //hold for slower and custom
+                else if(master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)){
+                    currentMode = LEVER_MANUAL;
+                }
+                else if(master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
+                    currentMode = LEVER_EMERGENCY;
+                }
 
                 //make lever have correct speed
                 double leverVoltage = 0;
@@ -203,7 +213,7 @@ namespace subsystems {
                     case LEVER_FAST: {
                         //speed depends on angle
                         //have the lever move to a specific position at a specific speed using pid for the diffrent height state
-
+                        homed = false;
                         leverVoltage = (leverAngle == LEVER_UP) ? 12000 : 8000;
                         break;
                     }
@@ -211,14 +221,16 @@ namespace subsystems {
                     case LEVER_SLOW: {
                         //speed depends on angle
                         //have the lever move to a specific position at a specific speed using pid for the diffrent height state
-
+                        homed = false;
                         leverVoltage = (leverAngle == LEVER_UP) ? 6000 : 4000;
                         break;
                     }
 
                     case LEVER_MANUAL:{
-                      //this will allow for customized moving up for the robot 
-                      //at like a slow ish speed but will just allow for a hold
+                        //this will allow for customized moving up for the robot 
+                        //at like a slow ish speed but will just allow for a hold
+                        homed = false;
+                        leverVoltage = 2000;
                         break;
                     }
                     case LEVER_EMERGENCY:{
@@ -228,12 +240,33 @@ namespace subsystems {
 
 
                     case LEVER_IDLE:
-                    default:
-                        //no pid for going forwards it needs to use the unjam and then tare its position so it can go to go
+                    default: {
+                        if (homed) {
+                            // Already zeroed — just sit still
+                            leverVoltage = 0;
+                        } else {
+                            // Drive toward hard stop
+                            homing = true;
+                            leverVoltage = HOMING_VOLTAGE;
 
-                        
-                        //leverVoltage = -5000;
+                            if (isUnderStrain()) {
+                                strain_counter++;
+                                if (strain_counter >= STRAIN_CONFIRM_TICKS) {
+                                    // Confirmed hard stop — stop and tare
+                                    leverVoltage = 0;
+                                    lever_1.move_voltage(0);
+                                    // lever_2.move_voltage(0); // uncomment for second motor
+                                    leverTare();
+                                    homing = false;
+                                    homed = true;
+                                    strain_counter = 0;
+                                }
+                            } else {
+                                strain_counter = 0;
+                            }
+                        }
                         break;
+                    }
                 }
 
 

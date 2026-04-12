@@ -69,9 +69,11 @@ namespace subsystems {
     };
 
     enum LeverSpeed {
-        LEVER_IDLE,
-        LEVER_FAST,
-        LEVER_SLOW
+        LEVER_IDLE, //go down automatically untill it reaches the hard stop
+        LEVER_FAST, //spin as fast as possible to the top to push cubes fast
+        LEVER_SLOW, //spin slower
+        LEVER_MANUAL, //manual control allowing for stoping where ever it needs to
+        LEVER_EMERGENCY //move down it manualy
     };
 
     enum LeverAngle{
@@ -96,6 +98,15 @@ namespace subsystems {
 
         ez::PID lever_pid;//EZ Template PID controller
 
+        //hard stop detection for returning to idle
+        bool homing = false;
+        bool homed = false;
+        int strain_counter = 0;
+
+        static constexpr int HOMING_VOLTAGE = -2500;// voltage to drive toward hard stop
+        static constexpr int STRAIN_THRESHOLD = 1000;// mA (TUNE THIS DEPENDING HOW HOW MUCH STRAIN IT CAN BE ON)
+        static constexpr int STRAIN_CONFIRM_TICKS = 15;// how many loop ticks above threshold before stopping
+
 
         
 
@@ -111,6 +122,7 @@ namespace subsystems {
 
         //reset the positions of the IMEs in the motors
         void leverTare();
+        bool isUnderStrain();
 
 
 

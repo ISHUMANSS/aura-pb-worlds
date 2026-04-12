@@ -28,16 +28,16 @@
 
 // Motor ports
 // left
-#define LEFT_MOTOR_1 -11
-#define LEFT_MOTOR_2 -3
-#define LEFT_MOTOR_3 13
-#define LEFT_MOTOR_4 -14
+#define LEFT_MOTOR_1 -6
+#define LEFT_MOTOR_2 -7
+#define LEFT_MOTOR_3 -5
+#define LEFT_MOTOR_4 -4
 
 // right
-#define RIGHT_MOTOR_1 17
-#define RIGHT_MOTOR_2 16
-#define RIGHT_MOTOR_3 -18
-#define RIGHT_MOTOR_4 20
+#define RIGHT_MOTOR_1 15
+#define RIGHT_MOTOR_2 14
+#define RIGHT_MOTOR_3 2
+#define RIGHT_MOTOR_4 3
 
 // encoding ports (currently not used)
 //  #define X_ENCODER_TOP 'A'
@@ -46,7 +46,8 @@
 //  #define Y_ENCODER_BOTTOM 'D'
 
 // imu ports
-#define IMU1 15
+#define IMU1 11
+#define IMU2 12121
 
 // Subsystems Motor ports
 
