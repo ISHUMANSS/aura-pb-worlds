@@ -131,7 +131,7 @@ namespace subsystems {
                 char lever_angle_port,
                 char hood_port);
 
-        void setLeverState(double voltage, bool angle_state);
+        void setLeverState(double voltage, bool angle_state, bool hood_state);
 
         void setLeverTarget(double position, int max_speed); //set PID target
         

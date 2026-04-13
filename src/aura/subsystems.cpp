@@ -158,26 +158,26 @@ namespace subsystems {
     {    
     }
 
-            void lever::setLeverState(double voltage, bool angle_state){
+            void lever::setLeverState(double voltage, bool angle_state, bool hood_state){
                 lever_1.move_voltage(floor(voltage));
                 lever_2.move_voltage(floor(voltage));
                 lever_angle.set_value(angle_state);
+                hood.set_value(hood_state);
             }
 
             
 
             bool lever::isUnderStrain() {
-                // get_current_draw() returns milliamps
+                //returns milliamps
                 int current_1 = lever_1.get_current_draw();
-                // int current_2 = lever_2.get_current_draw(); // add when second motor in use
-                return current_1 > STRAIN_THRESHOLD;
+                int current_2 = lever_2.get_current_draw(); 
+                return (current_1 + current_2)/2 > STRAIN_THRESHOLD;
             }
 
 
             double lever::getLeverPosition() {
-                // Average both motors once lever_2 is active
-                // For now just use lever_1 since it's the active one
-                return lever_1.get_position();
+                //average both motors position
+                return (lever_1.get_position() + lever_2.get_position()/2);
             }
 
             void lever::setLeverTarget(double position, int max_speed) {
@@ -199,29 +199,45 @@ namespace subsystems {
                 }
 
                 bool angle_state = (leverAngle == LEVER_UP);
-                lever_angle.set_value(angle_state); // set pneumatic independently
+                lever_angle.set_value(angle_state);
 
-                // speed toggles
+                //speed toggles
                 if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
                     currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
                 }
                 else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
                     currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
                 }
-                else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+                
+                //hold buttons checked independently casue like it just didn't work
+                //can override toggles release goes IDLE
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
                     currentMode = LEVER_MANUAL;
                 }
                 else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
                     currentMode = LEVER_EMERGENCY;
                 }
+                //neither hold button is pressed return to IDLE
+                else if (currentMode == LEVER_MANUAL || currentMode == LEVER_EMERGENCY) {
+                    currentMode = LEVER_IDLE;
+                }
 
+                //open and close the hood
+                bool hoodOpen = (
+                    currentMode == LEVER_FAST  ||
+                    currentMode == LEVER_SLOW   ||
+                    currentMode == LEVER_MANUAL
+                );
+                hood.set_value(hoodOpen);
+
+
+                //set the state for the lever
                 switch (currentMode) {
 
                     case LEVER_FAST: {
                         homed = false;
                         double target = (leverAngle == LEVER_UP) ? TARGET_FAST_UP : TARGET_FAST_DOWN;
                         setLeverTarget(target, SPEED_FAST);
-                        // leverTask() drives the motor — nothing more needed here
                         break;
                     }
 
@@ -236,14 +252,14 @@ namespace subsystems {
                         homed = false;
                         usingPIDTarget = false;
                         lever_1.move_voltage(2000);
-                        // lever_2.move_voltage(2000);
+                        lever_2.move_voltage(2000);
                         break;
                     }
 
                     case LEVER_EMERGENCY: {
                         usingPIDTarget = false;
                         lever_1.move_voltage(HOMING_VOLTAGE);
-                        // lever_2.move_voltage(HOMING_VOLTAGE);
+                        lever_2.move_voltage(HOMING_VOLTAGE);
                         break;
                     }
 
@@ -253,17 +269,18 @@ namespace subsystems {
 
                         if (homed) {
                             lever_1.move_voltage(0);
-                            // lever_2.move_voltage(0);
+                            lever_2.move_voltage(0);
                         } else {
-                            // drive toward hard stop
+                            //drive toward hard stop
                             homing = true;
                             lever_1.move_voltage(HOMING_VOLTAGE);
-                            // lever_2.move_voltage(HOMING_VOLTAGE);
+                            lever_2.move_voltage(HOMING_VOLTAGE);
 
                             if (isUnderStrain()) {
                                 strain_counter++;
                                 if (strain_counter >= STRAIN_CONFIRM_TICKS) {
                                     lever_1.move_voltage(0);
+                                    lever_2.move_voltage(0);
                                     leverTare();
                                     homing = false;
                                     homed  = true;
@@ -281,8 +298,8 @@ namespace subsystems {
             void lever::leverTask() {
                 while (true) {
 
-                    pros::lcd::print(6, "Lever pos: %.1f", getLeverPosition());
-                    pros::lcd::print(7, "Lever mA:  %d",   lever_1.get_current_draw());
+                    pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
+                    pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
 
 
                     if (usingPIDTarget) {
@@ -290,7 +307,7 @@ namespace subsystems {
                         
                         output = ez::util::clamp(output, pid_max_speed);
                         lever_1.move(output);
-                        // lever_2.move(output); 
+                        lever_2.move(output); 
                     }
                     pros::delay(10);
                 }
