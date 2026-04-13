@@ -109,14 +109,14 @@ void initialize() {
   // });
 
   LVGLTheme my_theme = {
-    lv_color_hex(0x1d3d1e),   // background
-    lv_color_hex(0x330000),   // panel
-    lv_color_hex(0x105913),   // button
-    lv_color_hex(0x178a1c),   // button_selected
+    lv_color_hex(0x000000),   // background
+    lv_color_hex(0x4a4949),   // panel
+    lv_color_hex(0xFFFFFF),   // button
+    lv_color_hex(0x800080),   // button_selected
     lv_color_hex(0x38663a),   // accent and path points
-    lv_color_hex(0x238727),   //reversed path colour
-    lv_color_hex(0xffffff),   // text
-    lv_color_hex(0xaaaaaa),   // text_muted
+    lv_color_hex(0x238727),   // reversed path colour
+    lv_color_hex(0x000000),   // text
+    lv_color_hex(0x000000),   // text_muted
   };
   lvgl_selector_set_theme(my_theme);
 
@@ -127,18 +127,18 @@ void initialize() {
       {"right side auton", 
         "pick up blocks, match load, score",
         rightSideAuton,
-        {   // waypoints: x/y in inches from field centre
-           { 48, -48, false}, // Start in the bottom right tile
-            { 24, -48, false}, // Move one tile left
+        {   //waypoints: x/y in inches from field centre
+           { 48, -48, false},
+            { 24, -48, false},
             {20,-40, false},
-            { 0, -24,  true},  // Reverse toward the center
+            { 0, -24,  true},
             {-24,  0,  false},
         }
       },
       {"drive forwards and back pid",
         "Drive\n\nDrive forward and come back", 
         drive_example, 
-        {   // waypoints: x/y in inches from field centre
+        {   //waypoints: x/y in inches from field centre
             
         }
       },
@@ -339,12 +339,12 @@ void opcontrol() {
     chassis.opcontrol_curve_buttons_toggle(false);  // Disable modifying curves through the controller
     chassis.opcontrol_curve_default_set(3, 5); //scaling curve so it like is drivable :3
   
+    lever.driverFunctions();
 
-    intake.driverFunctions();
+    intake.driverFunctions(lever);
     // matchloader
     matchload.driverFunctions();
 
-    lever.driverFunctions();
 
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME

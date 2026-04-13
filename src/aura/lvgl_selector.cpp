@@ -5,7 +5,7 @@ LV_IMG_DECLARE(vexfield);
 static std::vector<LVGLAuton> autons;
 static int selected_auton = 0;
 
-static const int FIELD_SIZE = 160;  // enlarged canvas
+static const int FIELD_SIZE = 160;
 static const int FIELD_HALF = FIELD_SIZE / 2;
 static const int TILE_SIZE  = FIELD_SIZE / 6;
 
@@ -24,10 +24,10 @@ static lv_obj_t* btn_list     = nullptr;
 static lv_obj_t* desc_label   = nullptr;
 static lv_obj_t* field_canvas = nullptr;
 
-// Buffer sized for 160x160 ARGB8888
+//buffer sized for 160x160 ARGB8888
 static uint8_t canvas_buf[160 * 160 * 4];
 
-// Map field inches (-72..72) to canvas pixels (0..159)
+//map field inches (-72..72) to canvas pixels (0..159)
 static lv_coord_t field_px(float inch) {
     return (lv_coord_t)((inch + 72.0f) / 144.0f * (float)(FIELD_SIZE - 1));
 }
@@ -37,29 +37,26 @@ static void draw_field(int auton_idx) {
 
     lv_canvas_fill_bg(field_canvas, lv_color_hex(0x000000), LV_OPA_COVER);
 
-    // 1. Draw Field image
+    //draw field
     lv_draw_img_dsc_t img_draw_dsc;
     lv_draw_img_dsc_init(&img_draw_dsc);
     img_draw_dsc.opa = LV_OPA_70;
     lv_canvas_draw_img(field_canvas, 0, 0, &vexfield, &img_draw_dsc);
 
-    // 2. Setup Grid Drawing
+    //setup grid 
     lv_draw_rect_dsc_t tile_dsc;
     lv_draw_rect_dsc_init(&tile_dsc);
     tile_dsc.bg_opa = LV_OPA_TRANSP;
     tile_dsc.radius = 0;
 
-    // We want a 24x24 total grid (4 subdivisions per 6 tiles)
-    // 160px / 24 = ~6.66px per 6-inch square. 
-    // It's cleaner to calculate the pixel position directly for each line.
+    //get pixle positions for lines
     int total_subdivisions = 24; 
 
     for (int i = 0; i <= total_subdivisions; i++) {
         float percent = (float)i / total_subdivisions;
         lv_coord_t pos = (lv_coord_t)(percent * (FIELD_SIZE - 1));
 
-        // Determine line style: 
-        // Every 4th line is a "Major" line (the actual 24" foam tile border)
+        //main lines and sublines
         bool is_major = (i % 4 == 0);
 
         lv_draw_line_dsc_t grid_line_dsc;
@@ -68,19 +65,19 @@ static void draw_field(int auton_idx) {
         grid_line_dsc.color = lv_color_hex(0xffffff);
         grid_line_dsc.opa = is_major ? LV_OPA_40 : LV_OPA_10; // Major lines are brighter
 
-        // Horizontal line
+        //horizontal line
         lv_point_t h_pts[2] = {{0, pos}, {FIELD_SIZE - 1, pos}};
         lv_canvas_draw_line(field_canvas, h_pts, 2, &grid_line_dsc);
 
-        // Vertical line
+        //vertical line
         lv_point_t v_pts[2] = {{pos, 0}, {pos, FIELD_SIZE - 1}};
         lv_canvas_draw_line(field_canvas, v_pts, 2, &grid_line_dsc);
     }
 
-    // 3. Centre crosshair (highlighted in a different color)
+    //centre crosshair (highlighted in a different color)
     lv_draw_line_dsc_t cross_dsc;
     lv_draw_line_dsc_init(&cross_dsc);
-    cross_dsc.color = lv_color_hex(0x00ff00); // Slight green tint for center
+    cross_dsc.color = lv_color_hex(0x00ff00);//slight green tint for center
     cross_dsc.width = 1;
     cross_dsc.opa = LV_OPA_50;
     lv_coord_t mid = FIELD_SIZE / 2;
@@ -88,12 +85,12 @@ static void draw_field(int auton_idx) {
     lv_point_t v_mid[2] = {{mid, 0}, {mid, FIELD_SIZE - 1}};
     lv_canvas_draw_line(field_canvas, h_mid, 2, &cross_dsc);
 
-    // 4. Draw Waypoints (Rest of the code remains the same)
+    //Draw Waypoints
     if (auton_idx < 0 || auton_idx >= (int)autons.size()) return;
     const auto& aut = autons[auton_idx];
     if (aut.waypoints.empty()) return;
 
-    // Start circle (larger: 12x12)
+    //draw circle
     lv_draw_rect_dsc_t start_dsc;
     lv_draw_rect_dsc_init(&start_dsc);
     start_dsc.bg_opa       = LV_OPA_TRANSP;
@@ -106,7 +103,7 @@ static void draw_field(int auton_idx) {
         field_px(-aut.waypoints[0].y) - 6,
         12, 12, &start_dsc);
 
-    // Path lines + dots
+    //path lines + dots
     lv_draw_line_dsc_t path_dsc;
     lv_draw_line_dsc_init(&path_dsc);
     path_dsc.width = 2;
@@ -129,7 +126,7 @@ static void draw_field(int auton_idx) {
         };
         lv_canvas_draw_line(field_canvas, seg, 2, &path_dsc);
 
-        // Larger dots: 10x10
+        
         dot_dsc.bg_color = to.reverse ? theme.reverse_path : theme.accent;
         lv_coord_t dx = field_px(to.x) - 5;
         lv_coord_t dy = field_px(-to.y) - 5;
@@ -171,7 +168,7 @@ void lvgl_selector_set_theme(const LVGLTheme& t) {
     theme = t;
 }
 
-// Truncate name to maxLen chars, appending ".." if clipped
+//shorten name
 static void truncate_name(const char* src, char* dst, int maxLen) {
     int len = 0;
     while (src[len] && len < 64) len++;
@@ -190,7 +187,7 @@ void lvgl_selector_init() {
     lv_obj_set_style_bg_color(scr, theme.background, 0);
     lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
 
-    // Header
+    //header
     lv_obj_t* hdr = lv_obj_create(scr);
     lv_obj_set_size(hdr, 480, 32);
     lv_obj_align(hdr, LV_ALIGN_TOP_MID, 0, 0);
@@ -204,7 +201,7 @@ void lvgl_selector_init() {
     lv_obj_set_style_text_color(hdr_title, theme.text, 0);
     lv_obj_center(hdr_title);
 
-    // ── Left panel (narrowed to 148px, name only, no description preview) ──
+    //left panel
     lv_obj_t* left = lv_obj_create(scr);
     lv_obj_set_size(left, 148, 208);
     lv_obj_align(left, LV_ALIGN_TOP_LEFT, 4, 36);
@@ -231,7 +228,7 @@ void lvgl_selector_init() {
         lv_obj_add_event_cb(btn, auton_btn_event, LV_EVENT_CLICKED,
                             (void*)(intptr_t)i);
 
-        // Truncate to 12 visible characters
+        
         char trunc[16];
         truncate_name(autons[i].name, trunc, 12);
 
@@ -244,7 +241,7 @@ void lvgl_selector_init() {
         lv_obj_center(name_lbl);
     }
 
-    // ── Right panel (widened to 316px, taller canvas) ──
+    //right panel
     lv_obj_t* right = lv_obj_create(scr);
     lv_obj_set_size(right, 316, 208);
     lv_obj_align(right, LV_ALIGN_TOP_RIGHT, -4, 36);
@@ -263,7 +260,7 @@ void lvgl_selector_init() {
     lv_obj_set_size(field_canvas, FIELD_SIZE, FIELD_SIZE);
     draw_field(0);
 
-    // Legend
+    //legend
     lv_obj_t* legend = lv_obj_create(right);
     lv_obj_set_size(legend, 304, 16);
     lv_obj_set_style_bg_opa(legend, LV_OPA_TRANSP, 0);
@@ -288,7 +285,7 @@ void lvgl_selector_init() {
     make_legend_item(theme.accent,       "forward");
     make_legend_item(theme.reverse_path, "reverse");
 
-    // Description (now lives under the field in the right panel)
+    //Description
     desc_label = lv_label_create(right);
     lv_obj_set_size(desc_label, 304, LV_SIZE_CONTENT);
     lv_label_set_long_mode(desc_label, LV_LABEL_LONG_WRAP);
@@ -298,7 +295,7 @@ void lvgl_selector_init() {
         (!autons.empty() && autons[0].description)
             ? autons[0].description : "Select an autonomous routine.");
 
-    // Status bar
+    //footer
     lv_obj_t* status = lv_obj_create(scr);
     lv_obj_set_size(status, 480, 20);
     lv_obj_align(status, LV_ALIGN_BOTTOM_MID, 0, 0);

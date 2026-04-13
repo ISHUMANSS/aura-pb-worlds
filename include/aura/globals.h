@@ -53,8 +53,8 @@
 
 // set up so that they are all going up by default
 // Intake
-#define LEVER_1 -10
-#define LEVER_2 17
+#define LEVER_1 -12
+#define LEVER_2 13
 
 
 // Lever

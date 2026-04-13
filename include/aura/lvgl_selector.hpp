@@ -5,25 +5,25 @@
 typedef void (*auton_fn)();
 
 struct LVGLWaypoint {
-    float x;              // field X in inches (-72 to 72)
-    float y;              // field Y in inches (-72 to 72)
+    float x;// field X in inches (-72 to 72)
+    float y;// field Y in inches (-72 to 72)
     bool reverse = false; // true if driving backwards to this point
 };
 
 struct LVGLAuton {
     const char* name;
-    const char* description;   // shown in right panel
-    auton_fn                 fn;
-    std::vector<LVGLWaypoint> waypoints;    // empty = no path drawn
+    const char* description;
+    auton_fn fn;
+    std::vector<LVGLWaypoint> waypoints;
 };
 
 struct LVGLTheme {
-    lv_color_t background;
-    lv_color_t panel;           // replaces old header/button
-    lv_color_t button;
-    lv_color_t button_selected;
-    lv_color_t accent;          // forward path line + waypoint dots
-    lv_color_t reverse_path;    // reverse path line colour
+    lv_color_t background; //back ground behind the display
+    lv_color_t panel; //all colours for the pannels
+    lv_color_t button; //default button colour
+    lv_color_t button_selected; //picked button
+    lv_color_t accent; //i forgor :3
+    lv_color_t reverse_path; //reverse path line colour
     lv_color_t text;
     lv_color_t text_muted;
 };

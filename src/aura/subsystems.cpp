@@ -22,6 +22,202 @@
 */
 
 namespace subsystems {
+        lever::lever(int lever_1_port,
+                 int lever_2_port,
+                char lever_angle_port,
+                char hood_port
+            )
+        : lever_1(pros::Motor(lever_1_port,
+                            pros::v5::MotorGearset::red,
+                            pros::v5::MotorEncoderUnits::degrees)),
+        lever_2(pros::Motor(lever_2_port,
+                            pros::v5::MotorGearset::red,
+                            pros::v5::MotorEncoderUnits::degrees)),
+        lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
+        hood(pros::adi::Pneumatics(hood_port, false)),
+        // kP, kI, kD, start_i
+        lever_pid(5.0, 0.0, 20.0, 0.0, "Lever PID")
+    {    
+    }
+
+        void lever::setLeverState(double voltage, bool angle_state, bool hood_state){
+            lever_1.move_voltage(floor(voltage));
+            lever_2.move_voltage(floor(voltage));
+            lever_angle.set_value(angle_state);
+            hood.set_value(hood_state);
+        }
+
+        
+
+        bool lever::isUnderStrain() {
+            //returns milliamps
+            int current_1 = lever_1.get_current_draw();
+            int current_2 = lever_2.get_current_draw(); 
+            return (current_1 + current_2)/2 > STRAIN_THRESHOLD;
+        }
+
+
+        double lever::getLeverPosition() {
+            //average both motors position
+            return (lever_1.get_position() + lever_2.get_position()/2);
+        }
+
+        void lever::setLeverTarget(double position, int max_speed) {
+            pid_max_speed  = max_speed;
+            lever_pid.target_set(position);
+            usingPIDTarget = true;
+        }
+
+        //used to stop the intake from spinning when the lever its moving to target
+        //will give a small amout of time where the intake spins
+        bool lever::isGoingUp() {
+            return usingPIDTarget;
+        }
+
+        //stops the intake from spinning at all when the lever is going down
+        bool lever::isGoingDown() {
+            return homing;
+        }
+
+        //one button to toggle if the lever is able to go up or down and switches between the 2
+        //2 buttons controlling speed
+        //the speed that the lever moves at depends on if the lever is up or down 
+        //for example if the lever is down the fast speed is slower then when the lever is up and the fast button is clicked
+        void lever::driverFunctions() {
+            
+            // angle toggle
+            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+                angle_press_count++;
+                leverAngle = (angle_press_count % 2 != 0) ? LEVER_UP : LEVER_DOWN;         
+            }
+
+            bool angle_state = (leverAngle == LEVER_UP);
+            lever_angle.set_value(angle_state);
+
+            //speed toggles
+            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+                currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
+            }
+            else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+                currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
+            }
+            
+            //hold buttons checked independently casue like it just didn't work
+            //can override toggles release goes IDLE
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+                currentMode = LEVER_MANUAL;
+            }
+            else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                currentMode = LEVER_EMERGENCY;
+            }
+            //neither hold button is pressed return to IDLE
+            else if (currentMode == LEVER_MANUAL || currentMode == LEVER_EMERGENCY) {
+                currentMode = LEVER_IDLE;
+            }
+
+            //open and close the hood
+            bool hoodOpen = (
+                currentMode == LEVER_FAST  ||
+                currentMode == LEVER_SLOW   ||
+                currentMode == LEVER_MANUAL
+            );
+            hood.set_value(hoodOpen);
+
+
+            //set the state for the lever
+            switch (currentMode) {
+
+                case LEVER_FAST: {
+                    homed = false;
+                    double target = (leverAngle == LEVER_UP) ? TARGET_FAST_UP : TARGET_FAST_DOWN;
+                    setLeverTarget(target, SPEED_FAST);
+                    break;
+                }
+
+                case LEVER_SLOW: {
+                    homed = false;
+                    double target = (leverAngle == LEVER_UP) ? TARGET_SLOW_UP : TARGET_SLOW_DOWN;
+                    setLeverTarget(target, SPEED_SLOW);
+                    break;
+                }
+
+                case LEVER_MANUAL: {
+                    homed = false;
+                    usingPIDTarget = false;
+                    lever_1.move_voltage(2000);
+                    lever_2.move_voltage(2000);
+                    break;
+                }
+
+                case LEVER_EMERGENCY: {
+                    usingPIDTarget = false;
+                    lever_1.move_voltage(HOMING_VOLTAGE);
+                    lever_2.move_voltage(HOMING_VOLTAGE);
+                    break;
+                }
+
+                case LEVER_IDLE:
+                default: {
+                    usingPIDTarget = false;
+
+                    if (homed) {
+                        lever_1.move_voltage(0);
+                        lever_2.move_voltage(0);
+                    } else {
+                        //drive toward hard stop
+                        homing = true;
+                        lever_1.move_voltage(HOMING_VOLTAGE);
+                        lever_2.move_voltage(HOMING_VOLTAGE);
+
+                        if (isUnderStrain()) {
+                            strain_counter++;
+                            if (strain_counter >= STRAIN_CONFIRM_TICKS) {
+                                lever_1.move_voltage(0);
+                                lever_2.move_voltage(0);
+                                leverTare();
+                                homing = false;
+                                homed  = true;
+                                strain_counter = 0;
+                            }
+                        } else {
+                            strain_counter = 0;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        void lever::leverTask() {
+            while (true) {
+
+                pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
+                pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
+
+
+                if (usingPIDTarget) {
+                    double output = lever_pid.compute(getLeverPosition());
+                    
+                    output = ez::util::clamp(output, pid_max_speed);
+                    lever_1.move(output);
+                    lever_2.move(output); 
+                }
+                pros::delay(10);
+            }
+        }
+
+        //reset the lever postion to 0
+        //happens at the start of a match before auton and happebns each time the motor knows it at the bottom
+        void lever::leverTare(){
+            lever_1.tare_position();
+            lever_2.tare_position();
+        }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+
+
+
     //intake class
         //constructor
         intake::intake(
@@ -53,7 +249,34 @@ namespace subsystems {
             * Controls:
         
         */
-        void intake::driverFunctions() {
+        void intake::driverFunctions(lever& lev) {
+
+            //lever going down stop intake
+            if (lev.isGoingDown()) {
+                setIntakeState(0);
+                indexingEnabled = false;
+                boost_start_time = 0;
+                return;
+            }
+
+            //lever just started going up begin boost timer
+            if (lev.isGoingUp()) {
+                if (boost_start_time == 0) {
+                    boost_start_time = pros::millis();
+                }
+
+                if (pros::millis() - boost_start_time < BOOST_DURATION_MS) {
+                    setIntakeState(12000); //boost!!!!!!!!!!!!!!!!!
+                    return;
+                } else {
+                    setIntakeState(0); //no more boost :(
+                    return;
+                }
+            }
+
+            //lever not active reset boost timer and run normal driver logic
+            boost_start_time = 0;
+
             //TOGGLES
             //start indexing
             if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
@@ -135,191 +358,6 @@ namespace subsystems {
             0
         );
     }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-
-    lever::lever(int lever_1_port,
-                 int lever_2_port,
-                char lever_angle_port,
-                char hood_port
-            )
-        : lever_1(pros::Motor(lever_1_port,
-                            pros::v5::MotorGearset::red,
-                            pros::v5::MotorEncoderUnits::degrees)),
-        lever_2(pros::Motor(lever_2_port,
-                            pros::v5::MotorGearset::red,
-                            pros::v5::MotorEncoderUnits::degrees)),
-        lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
-        hood(pros::adi::Pneumatics(hood_port, false)),
-        // kP, kI, kD, start_i
-        lever_pid(5.0, 0.0, 20.0, 0.0, "Lever PID")
-    {    
-    }
-
-            void lever::setLeverState(double voltage, bool angle_state, bool hood_state){
-                lever_1.move_voltage(floor(voltage));
-                lever_2.move_voltage(floor(voltage));
-                lever_angle.set_value(angle_state);
-                hood.set_value(hood_state);
-            }
-
-            
-
-            bool lever::isUnderStrain() {
-                //returns milliamps
-                int current_1 = lever_1.get_current_draw();
-                int current_2 = lever_2.get_current_draw(); 
-                return (current_1 + current_2)/2 > STRAIN_THRESHOLD;
-            }
-
-
-            double lever::getLeverPosition() {
-                //average both motors position
-                return (lever_1.get_position() + lever_2.get_position()/2);
-            }
-
-            void lever::setLeverTarget(double position, int max_speed) {
-                pid_max_speed  = max_speed;
-                lever_pid.target_set(position);
-                usingPIDTarget = true;
-            }
-
-            //one button to toggle if the lever is able to go up or down and switches between the 2
-            //2 buttons controlling speed
-            //the speed that the lever moves at depends on if the lever is up or down 
-            //for example if the lever is down the fast speed is slower then when the lever is up and the fast button is clicked
-            void lever::driverFunctions() {
-                
-                // angle toggle
-                if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-                    angle_press_count++;
-                    leverAngle = (angle_press_count % 2 != 0) ? LEVER_UP : LEVER_DOWN;         
-                }
-
-                bool angle_state = (leverAngle == LEVER_UP);
-                lever_angle.set_value(angle_state);
-
-                //speed toggles
-                if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-                    currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
-                }
-                else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-                    currentMode = (currentMode == LEVER_SLOW) ? LEVER_IDLE : LEVER_SLOW;
-                }
-                
-                //hold buttons checked independently casue like it just didn't work
-                //can override toggles release goes IDLE
-                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-                    currentMode = LEVER_MANUAL;
-                }
-                else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-                    currentMode = LEVER_EMERGENCY;
-                }
-                //neither hold button is pressed return to IDLE
-                else if (currentMode == LEVER_MANUAL || currentMode == LEVER_EMERGENCY) {
-                    currentMode = LEVER_IDLE;
-                }
-
-                //open and close the hood
-                bool hoodOpen = (
-                    currentMode == LEVER_FAST  ||
-                    currentMode == LEVER_SLOW   ||
-                    currentMode == LEVER_MANUAL
-                );
-                hood.set_value(hoodOpen);
-
-
-                //set the state for the lever
-                switch (currentMode) {
-
-                    case LEVER_FAST: {
-                        homed = false;
-                        double target = (leverAngle == LEVER_UP) ? TARGET_FAST_UP : TARGET_FAST_DOWN;
-                        setLeverTarget(target, SPEED_FAST);
-                        break;
-                    }
-
-                    case LEVER_SLOW: {
-                        homed = false;
-                        double target = (leverAngle == LEVER_UP) ? TARGET_SLOW_UP : TARGET_SLOW_DOWN;
-                        setLeverTarget(target, SPEED_SLOW);
-                        break;
-                    }
-
-                    case LEVER_MANUAL: {
-                        homed = false;
-                        usingPIDTarget = false;
-                        lever_1.move_voltage(2000);
-                        lever_2.move_voltage(2000);
-                        break;
-                    }
-
-                    case LEVER_EMERGENCY: {
-                        usingPIDTarget = false;
-                        lever_1.move_voltage(HOMING_VOLTAGE);
-                        lever_2.move_voltage(HOMING_VOLTAGE);
-                        break;
-                    }
-
-                    case LEVER_IDLE:
-                    default: {
-                        usingPIDTarget = false;
-
-                        if (homed) {
-                            lever_1.move_voltage(0);
-                            lever_2.move_voltage(0);
-                        } else {
-                            //drive toward hard stop
-                            homing = true;
-                            lever_1.move_voltage(HOMING_VOLTAGE);
-                            lever_2.move_voltage(HOMING_VOLTAGE);
-
-                            if (isUnderStrain()) {
-                                strain_counter++;
-                                if (strain_counter >= STRAIN_CONFIRM_TICKS) {
-                                    lever_1.move_voltage(0);
-                                    lever_2.move_voltage(0);
-                                    leverTare();
-                                    homing = false;
-                                    homed  = true;
-                                    strain_counter = 0;
-                                }
-                            } else {
-                                strain_counter = 0;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            void lever::leverTask() {
-                while (true) {
-
-                    pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
-                    pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
-
-
-                    if (usingPIDTarget) {
-                        double output = lever_pid.compute(getLeverPosition());
-                        
-                        output = ez::util::clamp(output, pid_max_speed);
-                        lever_1.move(output);
-                        lever_2.move(output); 
-                    }
-                    pros::delay(10);
-                }
-            }
-
-            //reset the lever postion to 0
-            //happens at the start of a match before auton and happebns each time the motor knows it at the bottom
-            void lever::leverTare(){
-                lever_1.tare_position();
-                lever_2.tare_position();
-            }
-
 
         
     

@@ -19,55 +19,8 @@
 
 
 namespace subsystems {
+
     
-    //used to set the state of the intake
-    enum IntakeMode {
-        IDLE,
-        INTAKE_INDEX,
-        OUTTAKE_LOW,
-        SCORE_TALL,
-        SCORE_MID,
-        UNJAM
-    };
-    
-    class intake{
-        //set up the motors
-        pros::Motor intake_1;
-        pros::Motor intake_2;
-
-        
-
-        //be able to ge between the modes when diffrent buttons pressed
-        IntakeMode currentMode = IDLE;
-
-        //allow the index to keep running
-        bool indexingEnabled = false;
-        
-        //allow the low to be ran slowly
-        bool lowFast = false;
-        
-        public:
-        //constructor
-        intake(
-                int intake_1_port, 
-                int intake_2_port);
-
-        //sets the intake voltage and the states for all the pistons
-        void setIntakeState(double voltage);
-
-        
-        void driverFunctions();
-
-        //auton intake
-        void autoIndex();
-
-        void autoScoreLow();
-
-        void stopAuto();
-
-
-    };
-
     enum LeverSpeed {
         LEVER_IDLE, //go down automatically untill it reaches the hard stop
         LEVER_FAST, //spin as fast as possible to the top to push cubes fast
@@ -103,23 +56,23 @@ namespace subsystems {
         bool homed = false;
         int strain_counter = 0;
 
-        static constexpr int HOMING_VOLTAGE = -2500;// voltage to drive toward hard stop
+        static constexpr int HOMING_VOLTAGE = -6000;// voltage to drive toward hard stop
         static constexpr int STRAIN_THRESHOLD = 1000;// mA (TUNE THIS DEPENDING HOW HOW MUCH STRAIN IT CAN BE ON)
         static constexpr int STRAIN_CONFIRM_TICKS = 15;// how many loop ticks above threshold before stopping
 
         //PID control state
         bool usingPIDTarget = false;// true when PID should be driving motors
-        int  pid_max_speed  = 100;
+        int  pid_max_speed  = 127;
 
         //position targets (NEED TUNEING)
         //UP =lever is raised
         //DOWN = lever is lowered 
-        static constexpr double TARGET_FAST_UP   = 20.0;
-        static constexpr double TARGET_FAST_DOWN = 20.0;
-        static constexpr double TARGET_SLOW_UP   = 23.0;
-        static constexpr double TARGET_SLOW_DOWN = 23.0;
+        static constexpr double TARGET_FAST_UP   = 200.0;
+        static constexpr double TARGET_FAST_DOWN = 200.0;
+        static constexpr double TARGET_SLOW_UP   = 200.0;
+        static constexpr double TARGET_SLOW_DOWN = 200.0;
 
-        static constexpr int SPEED_FAST = 90;//max PID output fast mode
+        static constexpr int SPEED_FAST = 127;//max PID output fast mode
         static constexpr int SPEED_SLOW = 60;//max PID output slow mode
 
 
@@ -140,13 +93,70 @@ namespace subsystems {
         void driverFunctions();
 
         void leverTask();//runs in a task loop
+        
     
 
 
         //reset the positions of the IMEs in the motors
         void leverTare();
         bool isUnderStrain();
+        
+        //used to tell the intake to stop moving
+        bool isGoingUp(); //allows a short boost of intake moveing
+        bool isGoingDown(); //stops the intake from moving at all when its comeing down
 
+    };
+
+
+    //used to set the state of the intake
+    enum IntakeMode {
+        IDLE,
+        INTAKE_INDEX,
+        OUTTAKE_LOW,
+        SCORE_TALL,
+        SCORE_MID,
+        UNJAM
+    };
+    
+    class intake{
+        //set up the motors
+        pros::Motor intake_1;
+        pros::Motor intake_2;
+
+        
+
+        //be able to ge between the modes when diffrent buttons pressed
+        IntakeMode currentMode = IDLE;
+
+        //allow the index to keep running
+        bool indexingEnabled = false;
+        
+        //allow the low to be ran slowly
+        bool lowFast = false;
+
+
+        //time allowed for lever boost
+        uint32_t boost_start_time = 0;
+        static constexpr uint32_t BOOST_DURATION_MS = 300;
+        
+        public:
+        //constructor
+        intake(
+                int intake_1_port, 
+                int intake_2_port);
+
+        //sets the intake voltage and the states for all the pistons
+        void setIntakeState(double voltage);
+
+        
+        void driverFunctions(lever& lev);
+
+        //auton intake
+        void autoIndex();
+
+        void autoScoreLow();
+
+        void stopAuto();
 
 
     };
