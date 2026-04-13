@@ -4,6 +4,7 @@
 
 
 #include "aura/lvgl_selector.hpp"
+#include "autons.hpp"
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -217,6 +218,7 @@ void autonomous() {
 
   // ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
   lvgl_selector_run_selected();
+  // drive_example();
 }
 
 /**

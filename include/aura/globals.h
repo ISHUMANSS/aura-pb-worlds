@@ -46,14 +46,14 @@
 //  #define Y_ENCODER_BOTTOM 'D'
 
 // imu ports
-#define IMU1 11
+#define IMU1 19
 #define IMU2 12121
 
 // Subsystems Motor ports
 
 // set up so that they are all going up by default
 // Intake
-#define LEVER_1 -12
+#define LEVER_1 -16
 #define LEVER_2 13
 
 

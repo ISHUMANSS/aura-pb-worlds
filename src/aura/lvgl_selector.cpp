@@ -304,7 +304,7 @@ void lvgl_selector_init() {
     lv_obj_set_style_pad_all(status, 2, 0);
 
     lv_obj_t* status_lbl = lv_label_create(status);
-    lv_label_set_text(status_lbl, "AURA  |  Press A + B to run auto");
+    lv_label_set_text(status_lbl, "AURA  |  Press DOWN + B to run auto");
     lv_obj_set_style_text_font(status_lbl, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(status_lbl, theme.text_muted, 0);
     lv_obj_center(status_lbl);

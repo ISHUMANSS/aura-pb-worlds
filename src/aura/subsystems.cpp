@@ -59,7 +59,7 @@ namespace subsystems {
 
         double lever::getLeverPosition() {
             //average both motors position
-            return (lever_1.get_position() + lever_2.get_position()/2);
+            return (lever_1.get_position());
         }
 
         void lever::setLeverTarget(double position, int max_speed) {
@@ -107,7 +107,7 @@ namespace subsystems {
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
                 currentMode = LEVER_MANUAL;
             }
-            else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+            else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
                 currentMode = LEVER_EMERGENCY;
             }
             //neither hold button is pressed return to IDLE
@@ -144,8 +144,8 @@ namespace subsystems {
                 case LEVER_MANUAL: {
                     homed = false;
                     usingPIDTarget = false;
-                    lever_1.move_voltage(2000);
-                    lever_2.move_voltage(2000);
+                    lever_1.move_voltage(3000);
+                    lever_2.move_voltage(3000);
                     break;
                 }
 
@@ -174,10 +174,11 @@ namespace subsystems {
                             if (strain_counter >= STRAIN_CONFIRM_TICKS) {
                                 lever_1.move_voltage(0);
                                 lever_2.move_voltage(0);
-                                leverTare();
+                                
                                 homing = false;
                                 homed  = true;
                                 strain_counter = 0;
+                                leverTare();
                             }
                         } else {
                             strain_counter = 0;
