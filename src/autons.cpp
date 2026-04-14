@@ -380,10 +380,10 @@ void measure_offsets() {
 // . . .
 
 void rightSideAuton(){
-  lever.autoScore(150.0, 127, subsystems::LEVER_UP, 1000);
+  lever.autoScore(150.0, 127,  1000);
 
   // Example: Score SLOW in the LONG goal (LEVER_DOWN), wait 800ms, then come down
-  lever.autoScore(100.0, 65, subsystems::LEVER_DOWN, 800);
+  lever.autoScore(100.0, 65,  800);
   
 }
 
