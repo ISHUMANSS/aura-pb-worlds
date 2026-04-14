@@ -213,6 +213,80 @@ namespace subsystems {
             lever_1.tare_position();
             lever_2.tare_position();
         }
+
+
+        ////auton
+        void lever::autoAngleShift(LeverAngle angle){
+            this->leverAngle = angle;
+            lever_angle.set_value(angle == LEVER_UP);
+        
+        }
+
+        //helper function to wait until the lever PID reaches its target
+        void lever::waitUntilSettled(double target_position) {
+            //loop until the lever is within some degrees
+            while (std::abs(target_position - getLeverPosition()) > 5.0) {
+                pros::delay(10);
+            }
+            //add a small buffer delay to let the physical mechanism settle 
+            pros::delay(150);
+        }
+
+        //homing loop for auto
+        void lever::autoHome() {
+            usingPIDTarget = false; // Turn off PID
+            homing = true;
+            homed = false;
+
+            //drive motors down
+            lever_1.move_voltage(HOMING_VOLTAGE);
+            lever_2.move_voltage(HOMING_VOLTAGE);
+
+            int auto_strain_counter = 0;
+            
+            //wait until it hits the hard stop
+            while (true) {
+                if (isUnderStrain()) {
+                    auto_strain_counter++;
+                    if (auto_strain_counter >= STRAIN_CONFIRM_TICKS) {
+                        break; // Stop detected!
+                    }
+                } else {
+                    auto_strain_counter = 0;
+                }
+                pros::delay(10);
+            }
+
+            //stop motors and reset position
+            lever_1.move_voltage(0);
+            lever_2.move_voltage(0);
+            homing = false;
+            homed = true;
+            leverTare();
+        }
+
+        //move the lever to target position at set speed and then waint at the top
+        void lever::autoScore(double target_position, int speed, int wait_time_ms) {
+            //open hood
+            hood.set_value(true);
+
+            //set the PID target and spin speed
+            setLeverTarget(target_position, speed);
+
+            //wait for the lever to physically reach the top
+            waitUntilSettled(target_position);
+
+            //wait the specified amount of time at the top
+            pros::delay(wait_time_ms);
+
+            //close the hood
+            hood.set_value(false);
+
+            //bring the lever back down safely to the hard stop
+            autoHome();
+        }
+        
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    

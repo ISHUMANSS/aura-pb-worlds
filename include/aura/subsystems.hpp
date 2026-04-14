@@ -10,11 +10,10 @@
 /**
 *   This is where all the systems controlling the robot live
 *   Contains:
-*       - Drive Train
 *       - Intake
+*       - Lever
 *       - Match load
 *       - Descore
-*       - Park
 */
 
 
@@ -104,6 +103,21 @@ namespace subsystems {
         //used to tell the intake to stop moving
         bool isGoingUp(); //allows a short boost of intake moveing
         bool isGoingDown(); //stops the intake from moving at all when its comeing down
+
+        
+
+        //Auton
+        //allows you set a position 
+        void autoScore(double target_position, int speed, int wait_time_ms);
+        
+        //move the angle up and down
+        void autoAngleShift(LeverAngle angle);
+        
+        //blocks until the lever reaches its target (is blocking)
+        void waitUntilSettled(double target_position);
+        
+        //brings the lever back down to the hard stop (is blocking)
+        void autoHome();
 
     };
 

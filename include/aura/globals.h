@@ -1,5 +1,11 @@
 #pragma once
 
+#include "subsystems.hpp"
+extern subsystems::lever lever;
+extern subsystems::intake intake;
+extern subsystems::descore descore;
+extern subsystems::matchload matchload;
+
 /**
  * This is the File where all of the globals are set up
  * created to help simplify changing commonly used numbers and information
