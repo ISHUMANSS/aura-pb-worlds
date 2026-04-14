@@ -36,7 +36,7 @@ namespace subsystems {
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
         hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
-        lever_pid(5.0, 0.0, 20.0, 0.0, "Lever PID")
+        lever_pid(10.0, 0.5, 9.0, 0.0, "Lever PID")
     {    
     }
 

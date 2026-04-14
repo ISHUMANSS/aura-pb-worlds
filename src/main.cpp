@@ -6,6 +6,10 @@
 #include "aura/lvgl_selector.hpp"
 #include "autons.hpp"
 
+
+pros::Task* auton_task_handle = nullptr;
+bool auton_running = false;
+
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
 // https://ez-robotics.github.io/EZ-Template/
@@ -57,6 +61,30 @@ ez::Drive chassis(
 
 
 
+//auto escape task
+// Escape task just kills the auton movement and sets the flag — does NOT call opcontrol()
+void auton_escape_task() {
+  while (auton_running) {
+    if (
+        master.get_digital(DIGITAL_B) &&
+        master.get_digital(DIGITAL_Y)
+      ) {
+
+      master.rumble("- -");
+      auton_running = false;
+
+      //stop all movement immediately
+      chassis.drive_brake_set(MOTOR_BRAKE_COAST);
+      chassis.pid_targets_reset();
+
+      return;  //task exits, autonomous() returns, opcontrol() loop continues
+    }
+    pros::delay(20);
+  }
+}
+
+
+
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -91,23 +119,27 @@ void initialize() {
   // chassis.opcontrol_curve_buttons_right_set(pros::E_CONTROLLER_DIGITAL_Y, pros::E_CONTROLLER_DIGITAL_A);
 
   // Autonomous Selector using LLEMU
-  // ez::as::auton_selector.autons_add({
-  //     {"Drive\n\nDrive forward and come back", drive_example},
-  //     {"Turn\n\nTurn 3 times.", turn_example},
-  //     {"Drive and Turn\n\nDrive forward, turn, come back", drive_and_turn},
-  //     {"Drive and Turn\n\nSlow down during drive", wait_until_change_speed},
-  //     {"Swing Turn\n\nSwing in an 'S' curve", swing_example},
-  //     {"Motion Chaining\n\nDrive forward, turn, and come back, but blend everything together :D", motion_chaining},
-  //     {"Combine all 3 movements", combining_movements},
-  //     {"Interference\n\nAfter driving forward, robot performs differently if interfered or not", interfered_example},
-  //     {"Simple Odom\n\nThis is the same as the drive example, but it uses odom instead!", odom_drive_example},
-  //     {"Pure Pursuit\n\nGo to (0, 30) and pass through (6, 10) on the way.  Come back to (0, 0)", odom_pure_pursuit_example},
-  //     {"Pure Pursuit Wait Until\n\nGo to (24, 24) but start running an intake once the robot passes (12, 24)", odom_pure_pursuit_wait_until_example},
-  //     {"Boomerang\n\nGo to (0, 24, 45) then come back to (0, 0, 0)", odom_boomerang_example},
-  //     {"Boomerang Pure Pursuit\n\nGo to (0, 24, 45) on the way to (24, 24) then come back to (0, 0, 0)", odom_boomerang_injected_pure_pursuit_example},
-  //     {"Measure Offsets\n\nThis will turn the robot a bunch of times and calculate your offsets for your tracking wheels.", measure_offsets},
-  //     {"run right side auton",rightSideAuton},
-  // });
+  //ALSO COMMENT OUT THIS
+  ////
+  ///
+  ///
+  ez::as::auton_selector.autons_add({
+      {"Drive\n\nDrive forward and come back", drive_example},
+      {"Turn\n\nTurn 3 times.", turn_example},
+      {"Drive and Turn\n\nDrive forward, turn, come back", drive_and_turn},
+      {"Drive and Turn\n\nSlow down during drive", wait_until_change_speed},
+      {"Swing Turn\n\nSwing in an 'S' curve", swing_example},
+      {"Motion Chaining\n\nDrive forward, turn, and come back, but blend everything together :D", motion_chaining},
+      {"Combine all 3 movements", combining_movements},
+      {"Interference\n\nAfter driving forward, robot performs differently if interfered or not", interfered_example},
+      {"Simple Odom\n\nThis is the same as the drive example, but it uses odom instead!", odom_drive_example},
+      {"Pure Pursuit\n\nGo to (0, 30) and pass through (6, 10) on the way.  Come back to (0, 0)", odom_pure_pursuit_example},
+      {"Pure Pursuit Wait Until\n\nGo to (24, 24) but start running an intake once the robot passes (12, 24)", odom_pure_pursuit_wait_until_example},
+      {"Boomerang\n\nGo to (0, 24, 45) then come back to (0, 0, 0)", odom_boomerang_example},
+      {"Boomerang Pure Pursuit\n\nGo to (0, 24, 45) on the way to (24, 24) then come back to (0, 0, 0)", odom_boomerang_injected_pure_pursuit_example},
+      {"Measure Offsets\n\nThis will turn the robot a bunch of times and calculate your offsets for your tracking wheels.", measure_offsets},
+      {"run right side auton",rightSideAuton},
+  });
 
   LVGLTheme my_theme = {
     lv_color_hex(0x000000),   // background
@@ -143,17 +175,21 @@ void initialize() {
             
         }
       },
-
-
-      
-
-});
+   
+  });
 
 
   // Initialize chassis and auton selector
   chassis.initialize();
-  // ez::as::initialize();
-  lvgl_selector_init();
+
+
+
+  //CHANGE HERE TO BE ABLE TO USE THE PID SELECTOR
+  //EZ DEFAULT  
+  ez::as::initialize();
+
+  //CUSTOM ONE
+  // lvgl_selector_init();
 
   //reset the lever positions and start the task allowing for PID
   lever.leverTare();
@@ -197,6 +233,9 @@ void competition_initialize() {
  * from where it left off.
  */
 void autonomous() {
+  auton_running = true;
+  pros::Task escape_task(auton_escape_task);
+
   chassis.pid_targets_reset();                // Resets PID targets to 0
   chassis.drive_imu_reset();                  // Reset gyro position to 0
   chassis.drive_sensor_reset();               // Reset drive sensors to 0
@@ -216,10 +255,18 @@ void autonomous() {
   to be consistent
   */
 
-  // ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
-  lvgl_selector_run_selected();
+  //ALSO CHANGE HERE
+
+  ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
+  
+  //lvgl_selector_run_selected();
   // drive_example();
+
+  auton_running = false;
 }
+
+
+
 
 /**
  * Simplifies printing tracker values to the brain screen
@@ -329,6 +376,8 @@ void ez_template_extras() {
 void opcontrol() {
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
+
+  autonomous();
 
   
   while (true) {
