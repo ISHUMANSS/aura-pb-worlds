@@ -341,7 +341,8 @@ namespace subsystems {
                 }
 
                 if (pros::millis() - boost_start_time < BOOST_DURATION_MS) {
-                    setIntakeState(12000); //boost!!!!!!!!!!!!!!!!!
+                    //this also kinda picks up the next block which is not great
+                    setIntakeState(1000); //boost!!!!!!!!!!!!!!!!!
                     return;
                 } else {
                     setIntakeState(0); //no more boost :(
