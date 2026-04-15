@@ -161,11 +161,12 @@ void initialize() {
         "pick up blocks, match load, score",
         rightSideAuton,
         {   //waypoints: x/y in inches from field centre
-           { 48, -48, false},
-            { 24, -48, false},
-            {20,-40, false},
-            { 0, -24,  true},
-            {-24,  0,  false},
+            {-47, -5, false},
+            { -47, -47, false},
+            {-61,-47, false},
+            { -28, -47,  true},
+            {-61,-47, false},
+            {-11,-11, true}
         }
       },
       {"drive forwards and back pid",
@@ -175,6 +176,15 @@ void initialize() {
             
         }
       },
+      {
+        "Right Rush",
+        "match load score wing",
+        rightSideRush,
+        {
+          
+        }
+
+      }
    
   });
 
@@ -352,7 +362,6 @@ void ez_template_extras() {
     // Allow PID Tuner to iterate
     chassis.pid_tuner_iterate();
   }
-
   // Disable PID Tuner when connected to a comp switch
   else {
     if (chassis.pid_tuner_enabled())
@@ -374,7 +383,6 @@ void ez_template_extras() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-  // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
 
   autonomous();

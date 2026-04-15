@@ -387,3 +387,7 @@ void rightSideAuton(){
   
 }
 
+void rightSideRush(){
+  
+}
+
