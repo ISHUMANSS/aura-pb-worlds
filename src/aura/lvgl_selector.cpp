@@ -32,6 +32,14 @@ static lv_coord_t field_px(float inch) {
     return (lv_coord_t)((inch + 72.0f) / 144.0f * (float)(FIELD_SIZE - 1));
 }
 
+// Convert path.jerryio coords to canvas pixel coords.
+// The field image is rotated 90° CW (red at bottom) vs path.jerryio (red on right),
+// so we rotate waypoints 90° CCW to compensate:
+//   canvas_x = field_px( y)
+//   canvas_y = field_px(-x)  -- no extra Y flip needed; the rotation handles it
+static lv_coord_t wp_px_x(float x, float y) { return field_px(-y); }
+static lv_coord_t wp_px_y(float x, float y) { return field_px(-x); }
+
 static void draw_field(int auton_idx) {
     if (field_canvas == nullptr) return;
 
@@ -43,14 +51,14 @@ static void draw_field(int auton_idx) {
     img_draw_dsc.opa = LV_OPA_70;
     lv_canvas_draw_img(field_canvas, 0, 0, &vexfield, &img_draw_dsc);
 
-    //setup grid 
+    //setup grid
     lv_draw_rect_dsc_t tile_dsc;
     lv_draw_rect_dsc_init(&tile_dsc);
     tile_dsc.bg_opa = LV_OPA_TRANSP;
     tile_dsc.radius = 0;
 
-    //get pixle positions for lines
-    int total_subdivisions = 24; 
+    //get pixel positions for lines
+    int total_subdivisions = 24;
 
     for (int i = 0; i <= total_subdivisions; i++) {
         float percent = (float)i / total_subdivisions;
@@ -63,7 +71,7 @@ static void draw_field(int auton_idx) {
         lv_draw_line_dsc_init(&grid_line_dsc);
         grid_line_dsc.width = 1;
         grid_line_dsc.color = lv_color_hex(0xffffff);
-        grid_line_dsc.opa = is_major ? LV_OPA_40 : LV_OPA_10; // Major lines are brighter
+        grid_line_dsc.opa = is_major ? LV_OPA_40 : LV_OPA_10;
 
         //horizontal line
         lv_point_t h_pts[2] = {{0, pos}, {FIELD_SIZE - 1, pos}};
@@ -74,23 +82,24 @@ static void draw_field(int auton_idx) {
         lv_canvas_draw_line(field_canvas, v_pts, 2, &grid_line_dsc);
     }
 
-    //centre crosshair (highlighted in a different color)
+    //centre crosshair
     lv_draw_line_dsc_t cross_dsc;
     lv_draw_line_dsc_init(&cross_dsc);
-    cross_dsc.color = lv_color_hex(0x00ff00);//slight green tint for center
+    cross_dsc.color = lv_color_hex(0x00ff00);
     cross_dsc.width = 1;
     cross_dsc.opa = LV_OPA_50;
     lv_coord_t mid = FIELD_SIZE / 2;
     lv_point_t h_mid[2] = {{0, mid}, {FIELD_SIZE - 1, mid}};
     lv_point_t v_mid[2] = {{mid, 0}, {mid, FIELD_SIZE - 1}};
     lv_canvas_draw_line(field_canvas, h_mid, 2, &cross_dsc);
+    lv_canvas_draw_line(field_canvas, v_mid, 2, &cross_dsc);
 
     //Draw Waypoints
     if (auton_idx < 0 || auton_idx >= (int)autons.size()) return;
     const auto& aut = autons[auton_idx];
     if (aut.waypoints.empty()) return;
 
-    //draw circle
+    //draw start circle
     lv_draw_rect_dsc_t start_dsc;
     lv_draw_rect_dsc_init(&start_dsc);
     start_dsc.bg_opa       = LV_OPA_TRANSP;
@@ -99,8 +108,8 @@ static void draw_field(int auton_idx) {
     start_dsc.border_opa   = LV_OPA_COVER;
     start_dsc.radius       = LV_RADIUS_CIRCLE;
     lv_canvas_draw_rect(field_canvas,
-        field_px(aut.waypoints[0].x) - 6,
-        field_px(-aut.waypoints[0].y) - 6,
+        wp_px_x(aut.waypoints[0].x, aut.waypoints[0].y) - 6,
+        wp_px_y(aut.waypoints[0].x, aut.waypoints[0].y) - 6,
         12, 12, &start_dsc);
 
     //path lines + dots
@@ -121,15 +130,14 @@ static void draw_field(int auton_idx) {
 
         path_dsc.color = to.reverse ? theme.reverse_path : theme.accent;
         lv_point_t seg[2] = {
-            {field_px(from.x), field_px(-from.y)},
-            {field_px(to.x),   field_px(-to.y)}
+            {wp_px_x(from.x, from.y), wp_px_y(from.x, from.y)},
+            {wp_px_x(to.x,   to.y),   wp_px_y(to.x,   to.y)}
         };
         lv_canvas_draw_line(field_canvas, seg, 2, &path_dsc);
 
-        
         dot_dsc.bg_color = to.reverse ? theme.reverse_path : theme.accent;
-        lv_coord_t dx = field_px(to.x) - 5;
-        lv_coord_t dy = field_px(-to.y) - 5;
+        lv_coord_t dx = wp_px_x(to.x, to.y) - 5;
+        lv_coord_t dy = wp_px_y(to.x, to.y) - 5;
         lv_canvas_draw_rect(field_canvas, dx, dy, 10, 10, &dot_dsc);
     }
 }
@@ -217,7 +225,7 @@ void lvgl_selector_init() {
 
     for (int i = 0; i < (int)autons.size(); i++) {
         lv_obj_t* btn = lv_btn_create(left);
-        lv_obj_set_size(btn, 138, 32);  // shorter height — name only
+        lv_obj_set_size(btn, 138, 32);
         lv_obj_set_style_bg_color(btn,
             i == 0 ? theme.button_selected : theme.button, 0);
         lv_obj_set_style_border_color(btn,
@@ -228,7 +236,6 @@ void lvgl_selector_init() {
         lv_obj_add_event_cb(btn, auton_btn_event, LV_EVENT_CLICKED,
                             (void*)(intptr_t)i);
 
-        
         char trunc[16];
         truncate_name(autons[i].name, trunc, 12);
 
