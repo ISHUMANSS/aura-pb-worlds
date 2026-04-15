@@ -169,21 +169,35 @@ void initialize() {
             {-11,-11, true}
         }
       },
-      {"drive forwards and back pid",
-        "Drive\n\nDrive forward and come back", 
-        drive_example, 
-        {   //waypoints: x/y in inches from field centre
-            
-        }
-      },
       {
         "Right Rush",
         "match load score wing",
         rightSideRush,
         {
+          {-47,-6, true},
+          {-47,-46, true},
+          {-66,-46, true},
+          {-28,-47, true},
+          {-28,-62, true},
+          {-7,-63, true}
 
         }
+      },
+      {
+        "Right Mid",
+        "Score mid first"
+        ,
+        rightMidScore,
+        {
+          {-47, -5, false},
+          {-18, -15, false},
+          {-62, -47, false},
+          {-27, -47, false},
+          {-62, -47, false},
+          {-9, -41, false},
+          {-12, -10, false},
 
+        }
       }
    
   });

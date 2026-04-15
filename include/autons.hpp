@@ -21,3 +21,4 @@ void measure_offsets();
 //define future autons here also
 void rightSideAuton();
 void rightSideRush();
+void rightMidScore();
