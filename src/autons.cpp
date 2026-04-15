@@ -379,6 +379,7 @@ void measure_offsets() {
 // Make your own autonomous functions here!
 // . . .
 
+//general winpoint path
 void rightSideAuton(){
   lever.autoScore(130.0, 127,  1000);
 
@@ -387,7 +388,13 @@ void rightSideAuton(){
   
 }
 
+//scores 4 and then wings
 void rightSideRush(){
+
+}
+
+//mid first then back to score long
+void rightMidScore(){
 
 }
 
