@@ -71,7 +71,7 @@ namespace subsystems {
         static constexpr double TARGET_SLOW_UP   = 130.0;
         static constexpr double TARGET_SLOW_DOWN = 130.0;
 
-        static constexpr int SPEED_FAST = 127;//max PID output fast mode
+        static constexpr int SPEED_FAST = 100;//max PID output fast mode
         static constexpr int SPEED_SLOW = 60;//max PID output slow mode
 
 
