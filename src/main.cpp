@@ -181,7 +181,7 @@ void initialize() {
         "match load score wing",
         rightSideRush,
         {
-          
+
         }
 
       }
@@ -385,7 +385,7 @@ void ez_template_extras() {
 void opcontrol() {
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
 
-  autonomous();
+  // autonomous();
 
   
   while (true) {
@@ -396,7 +396,7 @@ void opcontrol() {
     
     chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     chassis.opcontrol_curve_buttons_toggle(false);  // Disable modifying curves through the controller
-    chassis.opcontrol_curve_default_set(3, 5); //scaling curve so it like is drivable :3
+    chassis.opcontrol_curve_default_set(6, 9); //scaling curve so it like is drivable :3
   
     lever.driverFunctions();
 
