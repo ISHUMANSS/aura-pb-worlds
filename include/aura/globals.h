@@ -65,8 +65,8 @@ extern subsystems::matchload matchload;
 
 
 // Lever
-#define INTAKE_1 20 
-#define INTAKE_2 -11  
+#define INTAKE_1 17
+#define INTAKE_2 -18
 
 
 // Prenumatics ports

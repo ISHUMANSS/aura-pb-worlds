@@ -192,8 +192,8 @@ namespace subsystems {
         void lever::leverTask() {
             while (true) {
 
-                pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
-                pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
+                // pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
+                // pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
 
 
                 if (usingPIDTarget) {
@@ -342,7 +342,7 @@ namespace subsystems {
 
                 if (pros::millis() - boost_start_time < BOOST_DURATION_MS) {
                     //this also kinda picks up the next block which is not great
-                    setIntakeState(1000); //boost!!!!!!!!!!!!!!!!!
+                    setIntakeState(1500); //boost!!!!!!!!!!!!!!!!!
                     return;
                 } else {
                     setIntakeState(0); //no more boost :(
