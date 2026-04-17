@@ -485,17 +485,8 @@ namespace subsystems {
 
         void descore::driverFunctions()
         {
-            pressCount += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1);
-
-            //pressed odd amount of times
-            if(pressCount % 2 != 0)
-            {
-                setState(true);
-            }
-            else
-            {
-                setState(false);
-            } 
+            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
+            setState(!buttonHeld);
         }
        
 
