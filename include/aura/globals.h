@@ -53,7 +53,7 @@ extern subsystems::matchload matchload;
 //  #define Y_ENCODER_BOTTOM 'D'
 
 // imu ports
-#define IMU1 10
+#define IMU1 20
 //#define IMU2 
 
 // Subsystems Motor ports
@@ -70,7 +70,7 @@ extern subsystems::matchload matchload;
 #define INTAKE_2 8 //left 
 
 
-#define EXPANDER_PORT 9
+// #define EXPANDER_PORT 9
 
 //Ports in the expander go from left to right A - H
 

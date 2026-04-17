@@ -411,7 +411,7 @@ void opcontrol() {
     
     chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     chassis.opcontrol_curve_buttons_toggle(false);  // Disable modifying curves through the controller
-    chassis.opcontrol_curve_default_set(6, 9); //scaling curve so it like is drivable :3
+    chassis.opcontrol_curve_default_set(3, 6); //scaling curve so it like is drivable :3
   
     lever.driverFunctions();
 
