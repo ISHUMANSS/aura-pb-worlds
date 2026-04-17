@@ -60,13 +60,13 @@ extern subsystems::matchload matchload;
 
 // set up so that they are all going up by default
 // Intake
-#define LEVER_1 -16
-#define LEVER_2 13
+#define LEVER_1 16
+#define LEVER_2 -13
 
 
 // Lever
-#define INTAKE_1 17
-#define INTAKE_2 -18
+#define INTAKE_1 -19
+#define INTAKE_2 20 
 
 
 // Prenumatics ports

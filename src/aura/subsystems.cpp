@@ -342,7 +342,7 @@ namespace subsystems {
 
                 if (pros::millis() - boost_start_time < BOOST_DURATION_MS) {
                     //this also kinda picks up the next block which is not great
-                    setIntakeState(1500); //boost!!!!!!!!!!!!!!!!!
+                    setIntakeState(12000); //boost!!!!!!!!!!!!!!!!!
                     return;
                 } else {
                     setIntakeState(0); //no more boost :(
@@ -386,13 +386,13 @@ namespace subsystems {
             {
                 
                 case INTAKE_INDEX:{
-                    voltage = 8000;
+                    voltage = 12000;
 
                     break;
                 }
                 case OUTTAKE_LOW:{
                     bool lowIsFast = lowFast || speedOverride;
-                    voltage = lowIsFast ?  -2500 : -6000;
+                    voltage = lowIsFast ?  -9000 : -12000;
 
                     indexingEnabled = false; 
                     break;
