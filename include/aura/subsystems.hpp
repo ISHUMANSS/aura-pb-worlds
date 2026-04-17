@@ -61,10 +61,10 @@ namespace subsystems {
 
         //PID control state
         bool usingPIDTarget = false;// true when PID should be driving motors
-        int  pid_max_speed  = 127;
+        int pid_max_speed  = 127;
 
         //position targets (NEED TUNEING)
-        //UP =lever is raised
+        //UP = lever is raised
         //DOWN = lever is lowered 
         static constexpr double TARGET_FAST_UP   = 130.0;
         static constexpr double TARGET_FAST_DOWN = 160.0;

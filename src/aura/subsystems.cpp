@@ -422,7 +422,7 @@ namespace subsystems {
     */
     void intake::autoScoreLow(){
         setIntakeState(
-            -6000 //goes the other direction
+            -9000 //goes the other direction
            ); 
     }
 
@@ -454,7 +454,7 @@ namespace subsystems {
 
         void matchload::driverFunctions()
         {
-            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
+            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y);
 
             //pressed odd amount of times
             if(matchload_press_count % 2 != 0)
@@ -487,7 +487,7 @@ namespace subsystems {
         {
             //hold L1 to extend
             //release to retract
-            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
             setState(buttonHeld);
         }
        
