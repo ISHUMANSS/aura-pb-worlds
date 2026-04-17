@@ -381,6 +381,11 @@ void measure_offsets() {
 
 //general winpoint path
 void rightSideAuton(){
+  //set the position
+  chassis.odom_xyt_set(0_in, 0_in, 0_deg);
+
+  
+
   lever.autoScore(130.0, 127,  1000);
 
   // Example: Score SLOW in the LONG goal (LEVER_DOWN), wait 800ms, then come down
