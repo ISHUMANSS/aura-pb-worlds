@@ -380,7 +380,7 @@ void measure_offsets() {
 // . . .
 
 //general winpoint path
-void rightSideAuton(){
+void leftSideAuton(){
   //set the position
   chassis.odom_xyt_set(0_in, 0_in, 0_deg);
 
@@ -394,12 +394,12 @@ void rightSideAuton(){
 }
 
 //scores 4 and then wings
-void rightSideRush(){
+void leftSideRush(){
 
 }
 
 //mid first then back to score long
-void rightMidScore(){
+void leftMidScore(){
 
 }
 

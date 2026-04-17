@@ -157,9 +157,9 @@ void initialize() {
 
   //my auton selector
   lvgl_selector_set_autons({
-      {"right side auton", 
+      {"left awp", 
         "pick up blocks, match load, score",
-        rightSideAuton,
+        leftSideAuton,
         {   //waypoints: x/y in inches from field centre
             {-47, -5, false},
             { -47, -47, false},
@@ -170,9 +170,9 @@ void initialize() {
         }
       },
       {
-        "Right Rush",
+        "left Rush",
         "match load score wing",
-        rightSideRush,
+        leftSideRush,
         {
           {-47,-6, true},
           {-47,-46, true},
@@ -184,10 +184,9 @@ void initialize() {
         }
       },
       {
-        "Right Mid",
-        "Score mid first"
-        ,
-        rightMidScore,
+        "left Mid",
+        "Score mid first",
+        leftMidScore,
         {
           {-47, -5, false},
           {-18, -15, false},
