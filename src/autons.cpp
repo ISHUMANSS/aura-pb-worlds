@@ -398,7 +398,7 @@ void leftSideAuton(){
   matchload.setState(true);
 
   //drive to match loader
-  chassis.pid_drive_set(15, 60);
+  chassis.pid_drive_set(10, 60);
   chassis.pid_wait();
 
   //match load grabing 3 balls
