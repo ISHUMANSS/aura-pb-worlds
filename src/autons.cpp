@@ -1,5 +1,6 @@
 #include "main.h"
 #include "aura/globals.h" 
+#include "subsystems.hpp"
 
 
 /////
@@ -382,7 +383,44 @@ void measure_offsets() {
 //general winpoint path
 void leftSideAuton(){
   //set the position
-  chassis.odom_xyt_set(0_in, 0_in, 0_deg);
+  chassis.odom_xyt_set(-47, -5, 0);
+
+  //move to center point
+  chassis.pid_odom_set({{-47, -47}, fwd, 70});
+  chassis.pid_wait();
+
+  //turn to match loader
+  chassis.pid_turn_set(270, 90);
+  chassis.pid_wait();
+
+
+  //put down match loader
+  matchload.setState(true);
+
+  //drive to match loader
+  chassis.pid_drive_set(15, 60);
+  chassis.pid_wait();
+
+  //match load grabing 3 balls
+  intake.autoIndex();
+  pros::delay(2000);
+  intake.stopAuto();
+
+  //drive to score
+
+  //score
+
+  //drive back to match loader
+    //clear out opposite blocks
+
+    //match load 3 blocks
+  
+  
+  //turn to face mid goal
+
+  //drive to mid goal
+
+  //score in mid goal
 
   
 
