@@ -35,16 +35,16 @@ extern subsystems::matchload matchload;
 
 // Motor ports
 // left
-#define LEFT_MOTOR_1 -6
-#define LEFT_MOTOR_2 -7
-#define LEFT_MOTOR_3 -5
-#define LEFT_MOTOR_4 -4
+#define LEFT_MOTOR_1 -15
+#define LEFT_MOTOR_2 -14
+#define LEFT_MOTOR_3 -16
+#define LEFT_MOTOR_4 -17
 
 // right
-#define RIGHT_MOTOR_1 15
-#define RIGHT_MOTOR_2 14
-#define RIGHT_MOTOR_3 2
-#define RIGHT_MOTOR_4 3
+#define RIGHT_MOTOR_1 2
+#define RIGHT_MOTOR_2 5
+#define RIGHT_MOTOR_3 6
+#define RIGHT_MOTOR_4 4
 
 // encoding ports (currently not used)
 //  #define X_ENCODER_TOP 'A'
@@ -53,34 +53,38 @@ extern subsystems::matchload matchload;
 //  #define Y_ENCODER_BOTTOM 'D'
 
 // imu ports
-#define IMU1 19
-#define IMU2 12121
+#define IMU1 10
+//#define IMU2 
 
 // Subsystems Motor ports
 
 // set up so that they are all going up by default
-// Intake
-#define LEVER_1 -16
-#define LEVER_2 13
-
-
 // Lever
-#define INTAKE_1 20 
-#define INTAKE_2 -11  
+#define LEVER_1 18 //right
+#define LEVER_2 -19 //left
+
+
+
+// Intake
+#define INTAKE_1 -3 //right
+#define INTAKE_2 8 //left 
+
+
+#define EXPANDER_PORT 9
+
+//Ports in the expander go from left to right A - H
 
 
 // Prenumatics ports
-// Matchload
-#define MATCHLOAD 'A' 
+// constexpr pros::adi::ext_adi_port_pair_t MATCHLOAD         = {EXPANDER_PORT, 2};
+// constexpr pros::adi::ext_adi_port_pair_t DESCORE           = {EXPANDER_PORT, 4};
+// constexpr pros::adi::ext_adi_port_pair_t HOOD              = {EXPANDER_PORT, 5};
+// constexpr pros::adi::ext_adi_port_pair_t LEVER_ANGLE_SHIFTER = {EXPANDER_PORT, 1};
+#define MATCHLOAD 'A'
+#define DESCORE 'F'
+#define HOOD 'C'
+#define LEVER_ANGLE_SHIFTER 'E'
 
-// Intake
-#define DESCORE 'C' 
-
-// Hood 
-#define HOOD 'B' 
-
-//Lever angle shifter
-#define LEVER_ANGLE_SHIFTER 'H'
 
 
 

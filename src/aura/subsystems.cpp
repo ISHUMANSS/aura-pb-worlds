@@ -23,7 +23,7 @@
 
 namespace subsystems {
         lever::lever(int lever_1_port,
-                 int lever_2_port,
+                int lever_2_port,
                 char lever_angle_port,
                 char hood_port
             )
@@ -34,7 +34,7 @@ namespace subsystems {
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
-        hood(pros::adi::Pneumatics(hood_port, false)),
+        hood(pros::adi::Pneumatics(hood_port, true)),
         // kP, kI, kD, start_i
         lever_pid(10.0, 0.5, 9.0, 0.0, "Lever PID")
     {    
@@ -121,7 +121,7 @@ namespace subsystems {
                 currentMode == LEVER_SLOW   ||
                 currentMode == LEVER_MANUAL
             );
-            hood.set_value(hoodOpen);
+            hood.set_value(!hoodOpen);
 
 
             //set the state for the lever
@@ -192,8 +192,8 @@ namespace subsystems {
         void lever::leverTask() {
             while (true) {
 
-                pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
-                pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
+                // pros::lcd::print(6, "Lever pos: %.1f, ", getLeverPosition());
+                // pros::lcd::print(7, "Lever 1 mA:  %d, 2 mA: %d",   lever_1.get_current_draw(), lever_2.get_current_draw());
 
 
                 if (usingPIDTarget) {
@@ -342,7 +342,7 @@ namespace subsystems {
 
                 if (pros::millis() - boost_start_time < BOOST_DURATION_MS) {
                     //this also kinda picks up the next block which is not great
-                    setIntakeState(1000); //boost!!!!!!!!!!!!!!!!!
+                    setIntakeState(12000); //boost!!!!!!!!!!!!!!!!!
                     return;
                 } else {
                     setIntakeState(0); //no more boost :(
@@ -392,7 +392,7 @@ namespace subsystems {
                 }
                 case OUTTAKE_LOW:{
                     bool lowIsFast = lowFast || speedOverride;
-                    voltage = lowIsFast ?  -2500 : -6000;
+                    voltage = lowIsFast ?  -9000 : -12000;
 
                     indexingEnabled = false; 
                     break;
@@ -454,7 +454,7 @@ namespace subsystems {
 
         void matchload::driverFunctions()
         {
-            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
+            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y);
 
             //pressed odd amount of times
             if(matchload_press_count % 2 != 0)
@@ -480,15 +480,22 @@ namespace subsystems {
 
         void descore::setState(bool state)
         {
-            descore_solanoid.set_value(!state);
+            descore_solanoid.set_value(state);
         }
 
         void descore::driverFunctions()
         {
-            //hold L1 to extend
-            //release to retract
-            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-            setState(buttonHeld);
+            pressCount += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1);
+
+            //pressed odd amount of times
+            if(pressCount % 2 != 0)
+            {
+                setState(true);
+            }
+            else
+            {
+                setState(false);
+            } 
         }
        
 
