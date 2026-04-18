@@ -103,6 +103,7 @@ namespace subsystems {
         //used to tell the intake to stop moving
         bool isGoingUp(); //allows a short boost of intake moveing
         bool isGoingDown(); //stops the intake from moving at all when its comeing down
+        
 
         
 

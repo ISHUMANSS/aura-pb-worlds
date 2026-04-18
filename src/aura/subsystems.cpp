@@ -350,6 +350,7 @@ namespace subsystems {
                 }
             }
 
+
             //lever not active reset boost timer and run normal driver logic
             boost_start_time = 0;
 
@@ -384,9 +385,9 @@ namespace subsystems {
 
             switch(currentMode)
             {
-                
                 case INTAKE_INDEX:{
-                    voltage = 8000;
+                    voltage = 12000;
+                    
 
                     break;
                 }
