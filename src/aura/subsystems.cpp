@@ -355,7 +355,7 @@ namespace subsystems {
 
             //TOGGLES
             //start indexing
-            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
                 indexingEnabled = !indexingEnabled;
             }
 
@@ -368,7 +368,7 @@ namespace subsystems {
             //----------------------------------------------------
             
             
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
                 currentMode = OUTTAKE_LOW;
             }
             else if (indexingEnabled)
@@ -454,7 +454,7 @@ namespace subsystems {
 
         void matchload::driverFunctions()
         {
-            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y);
+            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN);
 
             //pressed odd amount of times
             if(matchload_press_count % 2 != 0)
