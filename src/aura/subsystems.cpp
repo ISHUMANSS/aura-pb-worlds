@@ -34,7 +34,7 @@ namespace subsystems {
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
         lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
-        hood(pros::adi::Pneumatics(hood_port, true)),
+        hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
         lever_pid(10.0, 0.5, 9.0, 0.0, "Lever PID")
     {    
@@ -483,7 +483,7 @@ namespace subsystems {
     //descorer class
     //Constructor
         descore::descore(char descore_solanoid_port) 
-        :   descore_solanoid(pros::adi::Pneumatics (descore_solanoid_port, false))
+        :   descore_solanoid(pros::adi::Pneumatics (descore_solanoid_port, true))
         {}
 
         void descore::setState(bool state)

@@ -67,9 +67,9 @@ namespace subsystems {
         //UP = lever is raised
         //DOWN = lever is lowered 
         static constexpr double TARGET_FAST_UP   = 130.0;
-        static constexpr double TARGET_FAST_DOWN = 160.0;
+        static constexpr double TARGET_FAST_DOWN = 140.0;
         static constexpr double TARGET_SLOW_UP   = 130.0;
-        static constexpr double TARGET_SLOW_DOWN = 160.0;
+        static constexpr double TARGET_SLOW_DOWN = 140.0;
 
         static constexpr int SPEED_FAST = 100;//max PID output fast mode
         static constexpr int SPEED_SLOW = 60;//max PID output slow mode
