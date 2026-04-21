@@ -94,6 +94,14 @@ namespace subsystems {
             bool angle_state = (leverAngle == LEVER_UP);
             lever_angle.set_value(angle_state);
 
+
+            //special put down
+            if(currentMode != LEVER_IDLE){
+                if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)){
+                    currentMode = LEVER_IDLE;
+                }
+            }
+
             //speed toggles
             if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
                 currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
