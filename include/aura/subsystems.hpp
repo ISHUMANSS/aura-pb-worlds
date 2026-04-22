@@ -109,13 +109,13 @@ namespace subsystems {
 
         //Auton
         //allows you set a position 
-        void autoScore(double target_position, int speed, int wait_time_ms);
+        void autoScore(double target_position, int speed, int wait_time_ms, int timeout_ms);
         
         //move the angle up and down
-        void autoAngleShift(LeverAngle angle);
+        void autoAngleShift(bool angle);
         
         //blocks until the lever reaches its target (is blocking)
-        void waitUntilSettled(double target_position);
+        void waitUntilSettled(double target_position, int timeout_ms);
         
         //brings the lever back down to the hard stop (is blocking)
         void autoHome();
