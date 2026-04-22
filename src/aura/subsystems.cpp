@@ -33,7 +33,7 @@ namespace subsystems {
         lever_2(pros::Motor(lever_2_port,
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
-        lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
+        lever_angle(pros::adi::Pneumatics(lever_angle_port, true)),
         hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
         lever_pid(10.0, 0.5, 9.0, 0.0, "Lever PID")
@@ -224,20 +224,29 @@ namespace subsystems {
 
 
         ////auton
-        void lever::autoAngleShift(LeverAngle angle){
-            this->leverAngle = angle;
-            lever_angle.set_value(angle == LEVER_UP);
+        void lever::autoAngleShift(bool angle){
+            lever_angle.set_value(angle);
         
         }
 
         //helper function to wait until the lever PID reaches its target
-        void lever::waitUntilSettled(double target_position) {
-            //loop until the lever is within some degrees
-            while (std::abs(target_position - getLeverPosition()) > 5.0) {
-                pros::delay(10);
+        void lever::waitUntilSettled(double target_position, int timeout_ms) {
+            int elapsed = 0;
+            const int POLL_INTERVAL = 10;
+
+            while (std::abs(target_position - getLeverPosition()) > 10.0) {
+                if (elapsed >= timeout_ms) {
+                    // Timed out — stop motors and bail
+                    usingPIDTarget = false;
+                    lever_1.move_voltage(0);
+                    lever_2.move_voltage(0);
+                    break;
+                }
+                elapsed += POLL_INTERVAL;
+                pros::delay(POLL_INTERVAL);
             }
-            //add a small buffer delay to let the physical mechanism settle 
-            pros::delay(150);
+
+            pros::delay(150); // settle buffer
         }
 
         //homing loop for auto
@@ -274,7 +283,7 @@ namespace subsystems {
         }
 
         //move the lever to target position at set speed and then waint at the top
-        void lever::autoScore(double target_position, int speed, int wait_time_ms) {
+        void lever::autoScore(double target_position, int speed, int wait_time_ms, int timeout_ms) {
             //open hood
             hood.set_value(false);
 
@@ -282,7 +291,7 @@ namespace subsystems {
             setLeverTarget(target_position, speed);
 
             //wait for the lever to physically reach the top
-            waitUntilSettled(target_position);
+            waitUntilSettled(target_position,timeout_ms);
 
             //wait the specified amount of time at the top
             pros::delay(wait_time_ms);

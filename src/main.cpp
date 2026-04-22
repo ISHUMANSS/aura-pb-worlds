@@ -282,9 +282,9 @@ void autonomous() {
 
   // ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
   
-  // lvgl_selector_run_selected();
+  lvgl_selector_run_selected();
 
-  leftSideRush();
+  // leftSideRush();
   
 
   auton_running = false;
@@ -368,7 +368,7 @@ void ez_template_extras() {
     //   chassis.pid_tuner_toggle(); //works when not connected to comp switch
 
     // Trigger the selected autonomous routine
-    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) {
+    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_X)) {
       pros::motor_brake_mode_e_t preference = chassis.drive_brake_get();
       autonomous();
       chassis.drive_brake_set(preference);
