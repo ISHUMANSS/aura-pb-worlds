@@ -33,7 +33,7 @@ namespace subsystems {
         lever_2(pros::Motor(lever_2_port,
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
-        lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
+        lever_angle(pros::adi::Pneumatics(lever_angle_port, true)),
         hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
         lever_pid(10.0, 0.5, 9.0, 0.0, "Lever PID")
@@ -94,6 +94,14 @@ namespace subsystems {
             bool angle_state = (leverAngle == LEVER_UP);
             lever_angle.set_value(angle_state);
 
+
+            //special put down
+            if(currentMode != LEVER_IDLE){
+                if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)){
+                    currentMode = LEVER_IDLE;
+                }
+            }
+
             //speed toggles
             if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
                 currentMode = (currentMode == LEVER_FAST) ? LEVER_IDLE : LEVER_FAST;
@@ -121,7 +129,7 @@ namespace subsystems {
                 currentMode == LEVER_SLOW   ||
                 currentMode == LEVER_MANUAL
             );
-            hood.set_value(hoodOpen);
+            hood.set_value(!hoodOpen);
 
 
             //set the state for the lever
@@ -216,20 +224,29 @@ namespace subsystems {
 
 
         ////auton
-        void lever::autoAngleShift(LeverAngle angle){
-            this->leverAngle = angle;
-            lever_angle.set_value(angle == LEVER_UP);
+        void lever::autoAngleShift(bool angle){
+            lever_angle.set_value(angle);
         
         }
 
         //helper function to wait until the lever PID reaches its target
-        void lever::waitUntilSettled(double target_position) {
-            //loop until the lever is within some degrees
-            while (std::abs(target_position - getLeverPosition()) > 5.0) {
-                pros::delay(10);
+        void lever::waitUntilSettled(double target_position, int timeout_ms) {
+            int elapsed = 0;
+            const int POLL_INTERVAL = 10;
+
+            while (std::abs(target_position - getLeverPosition()) > 10.0) {
+                if (elapsed >= timeout_ms) {
+                    // Timed out — stop motors and bail
+                    usingPIDTarget = false;
+                    lever_1.move_voltage(0);
+                    lever_2.move_voltage(0);
+                    break;
+                }
+                elapsed += POLL_INTERVAL;
+                pros::delay(POLL_INTERVAL);
             }
-            //add a small buffer delay to let the physical mechanism settle 
-            pros::delay(150);
+
+            pros::delay(150); // settle buffer
         }
 
         //homing loop for auto
@@ -266,21 +283,21 @@ namespace subsystems {
         }
 
         //move the lever to target position at set speed and then waint at the top
-        void lever::autoScore(double target_position, int speed, int wait_time_ms) {
+        void lever::autoScore(double target_position, int speed, int wait_time_ms, int timeout_ms) {
             //open hood
-            hood.set_value(true);
+            hood.set_value(false);
 
             //set the PID target and spin speed
             setLeverTarget(target_position, speed);
 
             //wait for the lever to physically reach the top
-            waitUntilSettled(target_position);
+            waitUntilSettled(target_position,timeout_ms);
 
             //wait the specified amount of time at the top
             pros::delay(wait_time_ms);
 
             //close the hood
-            hood.set_value(false);
+            hood.set_value(true);
 
             //bring the lever back down safely to the hard stop
             autoHome();
@@ -355,7 +372,7 @@ namespace subsystems {
 
             //TOGGLES
             //start indexing
-            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
                 indexingEnabled = !indexingEnabled;
             }
 
@@ -368,7 +385,7 @@ namespace subsystems {
             //----------------------------------------------------
             
             
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
                 currentMode = OUTTAKE_LOW;
             }
             else if (indexingEnabled)
@@ -422,7 +439,7 @@ namespace subsystems {
     */
     void intake::autoScoreLow(){
         setIntakeState(
-            -6000 //goes the other direction
+            -9000 //goes the other direction
            ); 
     }
 
@@ -454,7 +471,7 @@ namespace subsystems {
 
         void matchload::driverFunctions()
         {
-            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
+            matchload_press_count += master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN);
 
             //pressed odd amount of times
             if(matchload_press_count % 2 != 0)
@@ -475,7 +492,7 @@ namespace subsystems {
     //descorer class
     //Constructor
         descore::descore(char descore_solanoid_port) 
-        :   descore_solanoid(pros::adi::Pneumatics (descore_solanoid_port, false))
+        :   descore_solanoid(pros::adi::Pneumatics (descore_solanoid_port, true))
         {}
 
         void descore::setState(bool state)
@@ -487,7 +504,7 @@ namespace subsystems {
         {
             //hold L1 to extend
             //release to retract
-            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+            bool buttonHeld = master.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
             setState(buttonHeld);
         }
        

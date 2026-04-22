@@ -138,7 +138,7 @@ void initialize() {
   //     {"Boomerang\n\nGo to (0, 24, 45) then come back to (0, 0, 0)", odom_boomerang_example},
   //     {"Boomerang Pure Pursuit\n\nGo to (0, 24, 45) on the way to (24, 24) then come back to (0, 0, 0)", odom_boomerang_injected_pure_pursuit_example},
   //     {"Measure Offsets\n\nThis will turn the robot a bunch of times and calculate your offsets for your tracking wheels.", measure_offsets},
-  //     {"run right side auton",rightSideAuton},
+  //     //{"run right side auton",rightSideAuton},
   // });
 
   LVGLTheme my_theme = {
@@ -157,9 +157,9 @@ void initialize() {
 
   //my auton selector
   lvgl_selector_set_autons({
-      {"right side auton", 
+      {"left awp", 
         "pick up blocks, match load, score",
-        rightSideAuton,
+        leftSideAuton,
         {   //waypoints: x/y in inches from field centre
             {-47, -5, false},
             { -47, -47, false},
@@ -170,9 +170,9 @@ void initialize() {
         }
       },
       {
-        "Right Rush",
+        "left Rush",
         "match load score wing",
-        rightSideRush,
+        leftSideRush,
         {
           {-47,-6, true},
           {-47,-46, true},
@@ -184,10 +184,9 @@ void initialize() {
         }
       },
       {
-        "Right Mid",
-        "Score mid first"
-        ,
-        rightMidScore,
+        "left Mid",
+        "Score mid first",
+        leftMidScore,
         {
           {-47, -5, false},
           {-18, -15, false},
@@ -284,6 +283,8 @@ void autonomous() {
   // ez::as::auton_selector.selected_auton_call();  // Calls selected auton from autonomous selector
   
   lvgl_selector_run_selected();
+
+  // leftSideRush();
   
 
   auton_running = false;
@@ -363,18 +364,18 @@ void ez_template_extras() {
     //  When enabled:
     //  * use A and Y to increment / decrement the constants
     //  * use the arrow keys to navigate the constants
-    if (master.get_digital_new_press(DIGITAL_X)&& master.get_digital(DIGITAL_UP))
-      chassis.pid_tuner_toggle(); //works when not connected to comp switch
+    // if (master.get_digital_new_press(DIGITAL_X)&& master.get_digital(DIGITAL_UP))
+    //   chassis.pid_tuner_toggle(); //works when not connected to comp switch
 
     // Trigger the selected autonomous routine
-    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) {
+    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_X)) {
       pros::motor_brake_mode_e_t preference = chassis.drive_brake_get();
       autonomous();
       chassis.drive_brake_set(preference);
     }
 
-    // Allow PID Tuner to iterate
-    chassis.pid_tuner_iterate();
+    // // Allow PID Tuner to iterate
+    // chassis.pid_tuner_iterate();
   }
   // Disable PID Tuner when connected to a comp switch
   else {
@@ -410,13 +411,15 @@ void opcontrol() {
     
     chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     chassis.opcontrol_curve_buttons_toggle(false);  // Disable modifying curves through the controller
-    chassis.opcontrol_curve_default_set(6, 9); //scaling curve so it like is drivable :3
+    chassis.opcontrol_curve_default_set(6,10); //scaling curve so it like is drivable :3
   
     lever.driverFunctions();
 
     intake.driverFunctions(lever);
     // matchloader
     matchload.driverFunctions();
+
+    descore.driverFunctions();
 
 
 

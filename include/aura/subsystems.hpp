@@ -61,15 +61,15 @@ namespace subsystems {
 
         //PID control state
         bool usingPIDTarget = false;// true when PID should be driving motors
-        int  pid_max_speed  = 127;
+        int pid_max_speed  = 127;
 
         //position targets (NEED TUNEING)
-        //UP =lever is raised
+        //UP = lever is raised
         //DOWN = lever is lowered 
-        static constexpr double TARGET_FAST_UP   = 130.0;
-        static constexpr double TARGET_FAST_DOWN = 160.0;
-        static constexpr double TARGET_SLOW_UP   = 130.0;
-        static constexpr double TARGET_SLOW_DOWN = 160.0;
+        static constexpr double TARGET_FAST_UP   = 140.0;
+        static constexpr double TARGET_FAST_DOWN = 140.0;
+        static constexpr double TARGET_SLOW_UP   = 140.0;
+        static constexpr double TARGET_SLOW_DOWN = 140.0;
 
         static constexpr int SPEED_FAST = 100;//max PID output fast mode
         static constexpr int SPEED_SLOW = 60;//max PID output slow mode
@@ -108,13 +108,13 @@ namespace subsystems {
 
         //Auton
         //allows you set a position 
-        void autoScore(double target_position, int speed, int wait_time_ms);
+        void autoScore(double target_position, int speed, int wait_time_ms, int timeout_ms);
         
         //move the angle up and down
-        void autoAngleShift(LeverAngle angle);
+        void autoAngleShift(bool angle);
         
-        //blocks until the lever reaches its target (is blocking)
-        void waitUntilSettled(double target_position);
+        //blocks until the lever reaches its target
+        void waitUntilSettled(double target_position, int timeout_ms = 3000);
         
         //brings the lever back down to the hard stop (is blocking)
         void autoHome();
