@@ -35,16 +35,16 @@ extern subsystems::matchload matchload;
 
 // Motor ports
 // left
-#define LEFT_MOTOR_1 -15
+#define LEFT_MOTOR_1 -13
 #define LEFT_MOTOR_2 -14
-#define LEFT_MOTOR_3 -16
-#define LEFT_MOTOR_4 -17
+#define LEFT_MOTOR_3 -15
+#define LEFT_MOTOR_4 -16
 
 // right
-#define RIGHT_MOTOR_1 2
-#define RIGHT_MOTOR_2 5
-#define RIGHT_MOTOR_3 6
-#define RIGHT_MOTOR_4 4
+#define RIGHT_MOTOR_1 3
+#define RIGHT_MOTOR_2 4
+#define RIGHT_MOTOR_3 5
+#define RIGHT_MOTOR_4 6
 
 // encoding ports (currently not used)
 //  #define X_ENCODER_TOP 'A'
@@ -53,7 +53,7 @@ extern subsystems::matchload matchload;
 //  #define Y_ENCODER_BOTTOM 'D'
 
 // imu ports
-#define IMU1 20
+#define IMU1 19
 //#define IMU2 
 
 // Subsystems Motor ports
@@ -61,12 +61,12 @@ extern subsystems::matchload matchload;
 // set up so that they are all going up by default
 // Lever
 #define LEVER_1 18 //right
-#define LEVER_2 -19 //left
+#define LEVER_2 -17 //left
 
 
 
 // Intake
-#define INTAKE_1 -3 //right
+#define INTAKE_1 -7 //right
 #define INTAKE_2 8 //left 
 
 
