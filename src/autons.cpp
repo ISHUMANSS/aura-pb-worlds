@@ -329,6 +329,7 @@ void measure_offsets() {
 
 //general winpoint path
 void leftSideAuton(){
+  
   //set the position
   chassis.odom_xyt_set(-47, -5, 0);
 
@@ -338,7 +339,7 @@ void leftSideAuton(){
 
   //move to center point
   // chassis.pid_odom_set({{-47, -47}, fwd, 70});
-  chassis.pid_drive_set(40.3_in, 110);
+  chassis.pid_drive_set(39_in, 110);
   chassis.pid_wait();
 
   //turn to match loader
@@ -360,7 +361,7 @@ void leftSideAuton(){
   chassis.pid_drive_set(-8_in, 60);
   chassis.pid_wait();
 
-  // //match load grabing 3 balls
+  //match load grabing 3 balls
  
   
   chassis.pid_drive_set(8_in, 30);
@@ -368,7 +369,8 @@ void leftSideAuton(){
   pros::delay(1400);
 
 
-  intake.stopAuto();
+  // intake.stopAuto();
+  matchload.setState(true);
   pros::delay(100);
 
   //drive to score
@@ -378,6 +380,27 @@ void leftSideAuton(){
   //score
   lever.autoScore(130.0, 100,  800, 3000);
   pros::delay(1000);
+
+  //drive back and wing
+  chassis.pid_drive_set(10_in, 60);
+  chassis.pid_wait();
+
+  chassis.pid_turn_set(0, 50);
+  chassis.pid_wait();
+
+  chassis.pid_drive_set(10.5_in, 60);
+  chassis.pid_wait();
+
+  chassis.pid_turn_set(270, 90);
+  chassis.pid_wait();
+
+
+  descore.setState(false);
+  chassis.pid_drive_set(-29_in,60);
+  chassis.pid_wait();
+
+
+
 
   //drive back to match loader
   //clear out opposite blocks
