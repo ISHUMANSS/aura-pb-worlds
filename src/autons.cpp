@@ -339,7 +339,7 @@ void leftSideAuton(){
 
   //move to center point
   // chassis.pid_odom_set({{-47, -47}, fwd, 70});
-  chassis.pid_drive_set(39_in, 110);
+  chassis.pid_drive_set(40_in, 110);
   chassis.pid_wait();
 
   //turn to match loader
