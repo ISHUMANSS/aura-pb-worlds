@@ -330,8 +330,7 @@ void rightSideAuton(){
    //set the position
   chassis.odom_xyt_set(-47, -5, 180);
 
-  descore.setState(true);
-  lever.autoAngleShift(false);
+  lever.autoAngleShift(true);
   
 
   //move to center point
@@ -355,19 +354,18 @@ void rightSideAuton(){
   chassis.pid_drive_set(11.5_in, 60);
   chassis.pid_wait();
 
-  chassis.pid_drive_set(-8_in, 60);
-  chassis.pid_wait();
+  // chassis.pid_drive_set(-8_in, 60);
+  // chassis.pid_wait();
 
   // //match load grabing 3 balls
  
   
-  chassis.pid_drive_set(8_in, 30);
-  chassis.pid_wait();
+  // chassis.pid_drive_set(11_in, 30);
+  // chassis.pid_wait();
   pros::delay(1400);
 
 
-  intake.stopAuto();
-  pros::delay(100);
+  
 
   //drive to score
   chassis.pid_drive_set(-29_in, 60);
@@ -376,6 +374,29 @@ void rightSideAuton(){
   //score
   lever.autoScore(130.0, 100,  800, 3000);
   pros::delay(1000);
+
+  matchload.setState(true);
+  pros::delay(200);
+
+
+  //go and wing
+  chassis.pid_drive_set(10_in, 60);
+  chassis.pid_wait();
+
+  chassis.pid_turn_set(180, 50);
+  chassis.pid_wait();
+
+  chassis.pid_drive_set(10.5_in, 60);
+  chassis.pid_wait();
+
+  chassis.pid_turn_set(270, 90);
+  chassis.pid_wait();
+
+
+  
+  chassis.pid_drive_set(-29_in,60);
+  chassis.pid_wait();
+
 }
 
 //scores 4 and then wings

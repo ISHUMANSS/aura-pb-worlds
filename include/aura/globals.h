@@ -53,7 +53,7 @@ extern subsystems::matchload matchload;
 //  #define Y_ENCODER_BOTTOM 'D'
 
 // imu ports
-#define IMU1 6
+#define IMU1 9
 //#define IMU2 
 
 // Subsystems Motor ports
