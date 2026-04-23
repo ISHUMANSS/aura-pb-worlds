@@ -5,6 +5,7 @@
 
 #include "aura/lvgl_selector.hpp"
 #include "autons.hpp"
+#include "pros/misc.h"
 
 
 pros::Task* auton_task_handle = nullptr;
@@ -364,7 +365,7 @@ void ez_template_extras() {
     //   chassis.pid_tuner_toggle(); //works when not connected to comp switch
 
     // Trigger the selected autonomous routine
-    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) {
+    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_X)) {
       pros::motor_brake_mode_e_t preference = chassis.drive_brake_get();
       autonomous();
       chassis.drive_brake_set(preference);
