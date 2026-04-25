@@ -345,7 +345,7 @@ void rightSideAuton(){
 
   //put down match loader
 
-  matchload.setState(false);
+  matchload.setState(true);
   pros::delay(1000);
 
   // //drive to match loader
@@ -375,7 +375,7 @@ void rightSideAuton(){
   lever.autoScore(130.0, 100,  800, 3000);
   pros::delay(1000);
 
-  matchload.setState(true);
+  matchload.setState(false);
   pros::delay(200);
 
 
@@ -401,6 +401,7 @@ void rightSideAuton(){
 
 //scores 4 and then wings
 void rightSideRush(){
+  lever.autoScore(130.0, 100,  800, 3000);
 
 }
 
