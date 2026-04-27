@@ -37,7 +37,7 @@ extern subsystems::matchload matchload;
 // left
 #define LEFT_MOTOR_1 -15
 #define LEFT_MOTOR_2 -14
-#define LEFT_MOTOR_3 -16
+#define LEFT_MOTOR_3 -12
 #define LEFT_MOTOR_4 -17
 
 // right
@@ -82,5 +82,5 @@ extern subsystems::matchload matchload;
 // constexpr pros::adi::ext_adi_port_pair_t LEVER_ANGLE_SHIFTER = {EXPANDER_PORT, 1};
 #define MATCHLOAD 'A'
 #define DESCORE 'F'
-#define HOOD 'C'
+#define HOOD 'H'
 #define LEVER_ANGLE_SHIFTER 'E'

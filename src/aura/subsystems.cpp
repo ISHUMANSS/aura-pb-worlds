@@ -33,7 +33,7 @@ namespace subsystems {
         lever_2(pros::Motor(lever_2_port,
                             pros::v5::MotorGearset::red,
                             pros::v5::MotorEncoderUnits::degrees)),
-        lever_angle(pros::adi::Pneumatics(lever_angle_port, true)),
+        lever_angle(pros::adi::Pneumatics(lever_angle_port, false)),
         hood(pros::adi::Pneumatics(hood_port, false)),
         // kP, kI, kD, start_i
         lever_pid(10.0, 0.5, 9.0, 0.0, "Lever PID")
@@ -129,7 +129,7 @@ namespace subsystems {
                 currentMode == LEVER_SLOW   ||
                 currentMode == LEVER_MANUAL
             );
-            hood.set_value(!hoodOpen);
+            hood.set_value(hoodOpen);
 
 
             //set the state for the lever
@@ -285,7 +285,7 @@ namespace subsystems {
         //move the lever to target position at set speed and then waint at the top
         void lever::autoScore(double target_position, int speed, int wait_time_ms, int timeout_ms) {
             //open hood
-            hood.set_value(false);
+            hood.set_value(true);
 
             //set the PID target and spin speed
             setLeverTarget(target_position, speed);
@@ -297,7 +297,7 @@ namespace subsystems {
             pros::delay(wait_time_ms);
 
             //close the hood
-            hood.set_value(true);
+            hood.set_value(false);
 
             //bring the lever back down safely to the hard stop
             autoHome();
@@ -492,12 +492,12 @@ namespace subsystems {
     //descorer class
     //Constructor
         descore::descore(char descore_solanoid_port) 
-        :   descore_solanoid(pros::adi::Pneumatics (descore_solanoid_port, true))
+        :   descore_solanoid(pros::adi::Pneumatics (descore_solanoid_port, false))
         {}
 
         void descore::setState(bool state)
         {
-            descore_solanoid.set_value(!state);
+            descore_solanoid.set_value(state);
         }
 
         void descore::driverFunctions()

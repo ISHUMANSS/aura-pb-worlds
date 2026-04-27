@@ -333,13 +333,18 @@ void leftSideAuton(){
   //set the position
   chassis.odom_xyt_set(-47, -5, 0);
 
+  matchload.setState(true);
+  pros::delay(1500);
+  matchload.setState(false);
+  pros::delay(300);
+
   descore.setState(true);
-  lever.autoAngleShift(false);
+  lever.autoAngleShift(true);
   
 
   //move to center point
   // chassis.pid_odom_set({{-47, -47}, fwd, 70});
-  chassis.pid_drive_set(40_in, 110);
+  chassis.pid_drive_set(41_in, 110);
   chassis.pid_wait();
 
   //turn to match loader
@@ -349,13 +354,13 @@ void leftSideAuton(){
 
   //put down match loader
 
-  matchload.setState(false);
+  matchload.setState(true);
   pros::delay(1000);
 
   // //drive to match loader
   // chassis.pid_drive_set(10, 60);
   intake.autoIndex();
-  chassis.pid_drive_set(11.5_in, 60);
+  chassis.pid_drive_set(12.5_in, 60);
   chassis.pid_wait();
 
   chassis.pid_drive_set(-8_in, 60);
@@ -364,13 +369,13 @@ void leftSideAuton(){
   //match load grabing 3 balls
  
   
-  chassis.pid_drive_set(8_in, 30);
+  chassis.pid_drive_set(11_in, 30);
   chassis.pid_wait();
   pros::delay(1400);
 
 
   // intake.stopAuto();
-  matchload.setState(true);
+  matchload.setState(false);
   pros::delay(100);
 
   //drive to score
@@ -388,7 +393,7 @@ void leftSideAuton(){
   chassis.pid_turn_set(0, 50);
   chassis.pid_wait();
 
-  chassis.pid_drive_set(10.5_in, 60);
+  chassis.pid_drive_set(11.5_in, 60);
   chassis.pid_wait();
 
   chassis.pid_turn_set(270, 90);
@@ -469,6 +474,8 @@ void leftSideRush(){
 
 //mid first then back to score long
 void leftMidScore(){
+  lever.autoScore(130.0, 100,  800, 3000);
+  pros::delay(1000);
 
 }
 
