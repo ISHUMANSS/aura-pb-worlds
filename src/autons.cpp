@@ -1,5 +1,7 @@
 #include "main.h"
 #include "aura/globals.h" 
+#include "pros/rtos.hpp"
+#include "subsystems.hpp"
 
 
 /////
@@ -397,16 +399,110 @@ void rightSideAuton(){
   chassis.pid_drive_set(-29_in,60);
   chassis.pid_wait();
 
+  intake.stopAuto();
+  pros::delay(400);
+
 }
 
 //scores 4 and then wings
 void rightSideRush(){
+   //set the position
+  chassis.odom_xyt_set(-47, -5, 180);
+
+  lever.autoAngleShift(true);
+  
+
+  //move to center point
+  // chassis.pid_odom_set({{-47, -47}, fwd, 70});
+  chassis.pid_drive_set(40.3_in, 110);
+  chassis.pid_wait();
+
+  //turn to match loader
+  chassis.pid_turn_set(270, 90);
+  chassis.pid_wait();
+
+
+  //put down match loader
+
+  matchload.setState(true);
+  pros::delay(1000);
+
+  // //drive to match loader
+  // chassis.pid_drive_set(10, 60);
+  intake.autoIndex();
+  chassis.pid_drive_set(11.5_in, 60);
+  chassis.pid_wait();
+
+  // chassis.pid_drive_set(-8_in, 60);
+  // chassis.pid_wait();
+
+  // //match load grabing 3 balls
+ 
+  
+  // chassis.pid_drive_set(11_in, 30);
+  // chassis.pid_wait();
+  pros::delay(1400);
+
+
+  
+
+  //drive to score
+  chassis.pid_drive_set(-29_in, 60);
+  chassis.pid_wait();
+
+  //score
   lever.autoScore(130.0, 100,  800, 3000);
+  pros::delay(1000);
+
+  //matchload.setState(false);
+  intake.stopAuto();
+  pros::delay(200);
+
+  //go back and match load
+  chassis.pid_drive_set(29_in, 60);
+  chassis.pid_wait();
+
+  intake.autoIndex();
+  pros::delay(2000);
+
+
+  
+  lever.autoScore(120, 100, 200, 500);
+  pros::delay(500);
+
+  pros::delay(1000);
+
+  //drive 
+  chassis.pid_drive_set(-11_in, 60);
+  chassis.pid_wait();
+
+  //turn
+
+  chassis.pid_turn_set(43, 90);
+  chassis.pid_wait();
+
+  chassis.pid_drive_set(45_in, 60);
+  chassis.pid_wait();
+
+
+  intake.autoScoreLow();
+  pros::delay(3000);
+  
+  intake.stopAuto();
+  pros::delay(500);
+
+  
+
+
+
+
+
 
 }
 
 //mid first then back to score long
 void rightMidScore(){
+  
 
 }
 

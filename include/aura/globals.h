@@ -66,7 +66,7 @@ extern subsystems::matchload matchload;
 
 
 // Intake
-#define INTAKE_1 7 //right
+#define INTAKE_1 2 //right
 #define INTAKE_2 -8 //left 
 
 

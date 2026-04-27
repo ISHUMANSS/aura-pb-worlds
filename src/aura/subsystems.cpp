@@ -86,7 +86,7 @@ namespace subsystems {
         void lever::driverFunctions() {
             
             // angle toggle
-            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
                 angle_press_count++;
                 leverAngle = (angle_press_count % 2 != 0) ? LEVER_UP : LEVER_DOWN;         
             }
@@ -371,12 +371,12 @@ namespace subsystems {
 
             //TOGGLES
             //start indexing
-            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+            if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
                 indexingEnabled = !indexingEnabled;
             }
 
             //speed overide to help the intake go faster and slower for scoreing low goals
-            bool speedOverride = master.get_digital(pros::E_CONTROLLER_DIGITAL_UP);
+            bool speedOverride = master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT);
 
 
             //----------------------------------------------------
