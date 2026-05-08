@@ -393,7 +393,7 @@ void leftSideAuton(){
   chassis.pid_turn_set(0, 50);
   chassis.pid_wait();
 
-  chassis.pid_drive_set(11.5_in, 60);
+  chassis.pid_drive_set(12_in, 60);
   chassis.pid_wait();
 
   chassis.pid_turn_set(270, 90);
